@@ -1,7 +1,7 @@
 #!/bin/bash
 
 set -x
-export GIT_COMMIT_MESSAGE="${COMMIT_MESSAGE:-autocommit}"
+export GIT_COMMIT_MESSAGE="${GIT_COMMIT_MESSAGE:-autocommit}"
 
 git diff --exit-code 
 
