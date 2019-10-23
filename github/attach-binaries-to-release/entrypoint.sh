@@ -7,7 +7,7 @@ if [[ -z "$GITHUB_TOKEN" ]]; then
   exit 1
 fi
 
-if [[ -z "${INPUT_PATH}" ]]; then
+if [[ -z "$INPUT_PATH" ]]; then
   echo "Missing INPUT_PATH env variable"
   exit 1
 fi

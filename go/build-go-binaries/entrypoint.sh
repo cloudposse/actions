@@ -8,12 +8,12 @@ export GOBIN=$GOPATH/bin
 export PATH=$PATH:$GOBIN
 export GOX_OSARCH="${GOX_OSARCH:-windows/386 windows/amd64 freebsd/arm netbsd/386 netbsd/amd64 netbsd/arm linux/s390x linux/arm darwin/386 darwin/amd64 linux/386 linux/amd64 freebsd/amd64 freebsd/386 openbsd/386 openbsd/amd64}"
 
-if [[ -z "${INPUT_PATH}" ]]; then
+if [[ -z "$INPUT_PATH" ]]; then
   echo "Missing INPUT_PATH env variable"
   exit 1
 fi
 
-if [[ -z "${OUTPUT_PATH}" ]]; then
+if [[ -z "$OUTPUT_PATH" ]]; then
   echo "Missing OUTPUT_PATH env variable"
   exit 1
 fi
