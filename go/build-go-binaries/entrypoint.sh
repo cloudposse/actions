@@ -20,7 +20,7 @@ fi
 
 go get -u github.com/mitchellh/gox
 go get -u github.com/golang/dep/cmd/dep
-mkdir "${INPUT_PATH}" || exit 1
+mkdir -p "${INPUT_PATH}" || exit 1
 cp -r . "${INPUT_PATH}" || exit 1
 cd "${INPUT_PATH}" || exit 1
 dep ensure
