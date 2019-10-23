@@ -1,4 +1,4 @@
-FROM golang:1.13.3-alpine3.10
+FROM golang:1.13.3-buster
 
 LABEL maintainer="Cloud Posse <hello@cloudposse.com>"
 
