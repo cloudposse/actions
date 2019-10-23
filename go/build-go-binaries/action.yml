@@ -3,7 +3,7 @@ description: 'Build Go Binaries'
 author: 'Cloud Posse <hello@cloudposse.com>'
 runs:
   using: 'docker'
-  main: 'go/build-go-binaries/Dockerfile'
+  image: 'go/build-go-binaries/Dockerfile'
 branding:
   icon: 'activity'
   color: 'blue'
