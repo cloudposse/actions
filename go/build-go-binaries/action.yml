@@ -1,0 +1,9 @@
+name: 'Build Go Binaries'
+description: 'Build Go Binaries'
+author: 'Cloud Posse <hello@cloudposse.com>'
+runs:
+  using: 'docker'
+  main: 'Dockerfile'
+branding:
+  icon: 'activity'
+  color: 'blue'

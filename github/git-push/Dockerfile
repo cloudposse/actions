@@ -1,4 +1,5 @@
 FROM alpine:3.10
+
 LABEL maintainer="Cloud Posse <hello@cloudposse.com>"
 
 LABEL "com.github.actions.name"="Git Push"
