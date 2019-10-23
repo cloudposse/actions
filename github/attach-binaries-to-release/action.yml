@@ -3,7 +3,7 @@ description: 'Attach binaries to GitHub Release'
 author: 'Cloud Posse <hello@cloudposse.com>'
 runs:
   using: 'docker'
-  main: 'Dockerfile'
+  main: 'github/attach-binaries-to-release/Dockerfile'
 branding:
   icon: 'activity'
   color: 'blue'
