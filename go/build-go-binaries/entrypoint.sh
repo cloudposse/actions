@@ -20,7 +20,8 @@ fi
 
 go get -u github.com/mitchellh/gox
 go get -u github.com/golang/dep/cmd/dep
-cp -r . "${INPUT_PATH}"
-cd "${INPUT_PATH}"
+mkdir "${INPUT_PATH}" || exit 1
+cp -r . "${INPUT_PATH}" || exit 1
+cd "${INPUT_PATH}" || exit 1
 dep ensure
 gox -osarch="${GOX_OSARCH}" -output "${OUTPUT_PATH}{{.OS}}_{{.Arch}}"
