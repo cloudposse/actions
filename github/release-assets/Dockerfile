@@ -1,11 +1,18 @@
-FROM golang:1.13.3-buster
+FROM alpine:3.10
 
 LABEL maintainer="Cloud Posse <hello@cloudposse.com>"
 
-LABEL "com.github.actions.name"="Build Go Binaries"
-LABEL "com.github.actions.description"="Build Go Binaries"
+LABEL "com.github.actions.name"="Release Assets"
+LABEL "com.github.actions.description"="Attach assets to GitHub Release"
 LABEL "com.github.actions.icon"="activity"
 LABEL "com.github.actions.color"="blue"
+
+RUN	apk add --no-cache \
+	bash \
+	ca-certificates \
+	curl \
+	jq \
+	git
 
 COPY entrypoint.sh /
 

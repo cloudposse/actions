@@ -1,5 +1,5 @@
-name: 'Attach to Release'
-description: 'Attach binaries to GitHub Release'
+name: 'Release Assets'
+description: 'Attach assets to GitHub Release'
 author: 'Cloud Posse <hello@cloudposse.com>'
 runs:
   using: 'docker'

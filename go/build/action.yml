@@ -1,4 +1,4 @@
-name: 'Build Go Binaries'
+name: 'Build'
 description: 'Build Go Binaries'
 author: 'Cloud Posse <hello@cloudposse.com>'
 runs:
