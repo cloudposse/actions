@@ -1,0 +1,9 @@
+name: 'Git Push'
+description: 'Push Changes to Origin'
+author: 'Cloud Posse <hello@cloudposse.com>'
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+branding:
+  icon: 'activity'
+  color: 'blue'

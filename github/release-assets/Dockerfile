@@ -1,8 +1,9 @@
 FROM alpine:3.10
+
 LABEL maintainer="Cloud Posse <hello@cloudposse.com>"
 
-LABEL "com.github.actions.name"="Git Push"
-LABEL "com.github.actions.description"="Push Changes to Origin"
+LABEL "com.github.actions.name"="Release Assets"
+LABEL "com.github.actions.description"="Attach assets to GitHub Release"
 LABEL "com.github.actions.icon"="activity"
 LABEL "com.github.actions.color"="blue"
 
