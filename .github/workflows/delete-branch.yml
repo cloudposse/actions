@@ -1,0 +1,13 @@
+name: branch-cleanup
+on:
+  pull_request:
+    branches:
+      - master
+jobs:
+  cleanup-branch:
+    name: On pull request merge, safely delete the branch
+    runs-on: ubuntu-latest
+    steps:
+    - uses: cloudposse/actions/github/delete-branch@0.3.0
+      env:
+        NO_BRANCH_DELETED_EXIT_CODE: 0
