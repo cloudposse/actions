@@ -10,4 +10,5 @@ jobs:
     steps:
     - uses: cloudposse/actions/github/branch-cleanup@0.3.0
       env:
+        GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
         NO_BRANCH_DELETED_EXIT_CODE: 0
