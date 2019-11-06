@@ -1,0 +1,10 @@
+name: 'Auto Assign'
+on: pull_request
+
+jobs:
+  auto-assign:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: cloudposse/actions/github/auto-assign@auto-assign
+        with:
+          repo-token: "${{ secrets.GITHUB_TOKEN }}"

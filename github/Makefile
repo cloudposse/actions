@@ -1,4 +1,4 @@
-all: branch-cleanup auto-approve auto-merge create-pull-request
+all: branch-cleanup auto-approve auto-merge auto-assign create-pull-request
 
 clone(%):
 	rm -rf $%
@@ -20,6 +20,11 @@ auto-approve: clone(auto-approve)
 auto-merge: REPO=git@github.com:pascalgn/automerge-action.git
 auto-merge: REF=6d8643b52af0466d0f190ebb4901f25184bdd3c5
 auto-merge: clone(auto-merge)
+
+.PHONY : auto-assign
+auto-assign: REPO=git@github.com:kentaro-m/auto-assign-action.git
+auto-assign: REF=5fd7cfa5a54fc1c4efee28c3e3989cf9da535c05
+auto-assign: clone(auto-assign)
 
 .PHONY : create-pull-request
 create-pull-request: REPO=git@github.com:peter-evans/create-pull-request.git
