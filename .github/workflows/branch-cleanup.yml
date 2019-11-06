@@ -5,7 +5,7 @@ on:
       - master
 jobs:
   cleanup-branch:
-    name: On pull request merge, safely delete the branch
+    name: auto delete branch on merge
     runs-on: ubuntu-latest
     steps:
     - uses: cloudposse/actions/github/branch-cleanup@0.3.0
