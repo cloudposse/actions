@@ -1,4 +1,5 @@
 github/auto-approve: github/auto-approve/**
+github/auto-assign: github/auto-assign/**
 github/auto-merge: github/auto-merge/**
 github/branch-cleanup: github/branch-cleanup/**
 github/create-pull-request: github/create-pull-request/**
