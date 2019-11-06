@@ -1,0 +1,29 @@
+{
+  "name": "automerge-action",
+  "version": "0.0.1",
+  "description": "GitHub action to automatically merge pull requests",
+  "main": "lib/api.js",
+  "author": "Pascal",
+  "license": "MIT",
+  "private": true,
+  "bin": {
+    "automerge-action": "./bin/automerge.js"
+  },
+  "scripts": {
+    "test": "jest",
+    "it": "node it/it.js",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "@octokit/rest": "^16.33.1",
+    "argparse": "^1.0.7",
+    "fs-extra": "^8.1.0",
+    "tmp": "^0.1.0"
+  },
+  "devDependencies": {
+    "dotenv": "^8.1.0",
+    "eslint": "^6.5.1",
+    "eslint-plugin-jest": "^22.19.0",
+    "jest": "^24.9.0"
+  }
+}
