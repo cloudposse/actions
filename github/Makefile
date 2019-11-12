@@ -28,5 +28,5 @@ auto-assign: clone(auto-assign)
 
 .PHONY : create-pull-request
 create-pull-request: REPO=git@github.com:peter-evans/create-pull-request.git
-create-pull-request: REF=c9e477ec051a8fb2ef523640a5ecbfe6297514d3
+create-pull-request: REF=956a240181ff989925eadb734da93a4232f4dc4e
 create-pull-request: clone(create-pull-request)

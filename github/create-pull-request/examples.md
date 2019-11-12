@@ -3,13 +3,17 @@
 - [Use case: Create a pull request to update X periodically](#use-case-create-a-pull-request-to-update-x-periodically)
   - [Update NPM dependencies](#update-npm-dependencies)
   - [Keep Go up to date](#keep-go-up-to-date)
+  - [Update SwaggerUI for GitHub Pages](#update-swaggerui-for-github-pages)
   - [Spider and download a website](#spider-and-download-a-website)
 - [Use case: Create a pull request to update X by calling the GitHub API](#use-case-create-a-pull-request-to-update-x-by-calling-the-github-api)
+  - [Call the GitHub API from an external service](#call-the-github-api-from-an-external-service)
+  - [Call the GitHub API from another GitHub Actions workflow](#call-the-github-api-from-another-github-actions-workflow)
 - [Use case: Create a pull request to modify/fix pull requests](#use-case-create-a-pull-request-to-modifyfix-pull-requests)
   - [autopep8](#autopep8)
 - [Misc workflow tips](#misc-workflow-tips)
   - [Filtering push events](#filtering-push-events)
   - [Dynamic configuration using variables](#dynamic-configuration-using-variables)
+  - [Debugging GitHub Actions](#debugging-github-actions)
 
 
 ## Use case: Create a pull request to update X periodically
@@ -38,14 +42,14 @@ jobs:
           ncu -u
           npm install
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v1.6.1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          COMMIT_MESSAGE: update dependencies
-          PULL_REQUEST_TITLE: Automated Dependency Updates
-          PULL_REQUEST_BODY: This is an auto-generated PR with dependency updates.
-          PULL_REQUEST_BRANCH: dep-updates
-          BRANCH_SUFFIX: none
+        uses: peter-evans/create-pull-request@v1.7.2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: update dependencies
+          title: Automated Dependency Updates
+          body: This is an auto-generated PR with dependency updates.
+          branch: dep-updates
+          branch-suffix: none
 ```
 
 ### Keep Go up to date
@@ -72,17 +76,78 @@ jobs:
       - run: echo "##[set-output name=pr_title;]update to latest Go release ${{ steps.ensure_go.outputs.go_version}}"
         id: pr_title_maker
       - name: Create pull request
-        uses: peter-evans/create-pull-request@v1.6.1
+        uses: peter-evans/create-pull-request@v1.7.2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          title: ${{ steps.pr_title_maker.outputs.pr_title }}
+          body: Auto-generated pull request created by the GitHub Actions [create-pull-request](https://github.com/peter-evans/create-pull-request) and [ensure-latest-go](https://github.com/jmhodges/ensure-latest-go).
+          commit-message: ${{ steps.pr_title_maker.outputs.pr_title }}
+          branch-suffix: none
+          branch: ensure-latest-go/patch-${{ steps.ensure_go.outputs.go_version }}
+```
+
+### Update SwaggerUI for GitHub Pages
+
+When using [GitHub Pages to host Swagger documentation](https://github.com/peter-evans/swagger-github-pages), this workflow updates the repository with the latest distribution of [SwaggerUI](https://github.com/swagger-api/swagger-ui).
+
+You must create a file called `swagger-ui.version` at the root of your repository before running.
+```yml
+name: Update Swagger UI
+on:
+  schedule:
+    - cron:  '0 10 * * *'
+jobs:
+  updateSwagger:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: Get Latest Swagger UI Release
+        id: swagger-ui
+        run: |
+          echo ::set-output name=release_tag::$(curl -sL https://api.github.com/repos/swagger-api/swagger-ui/releases/latest | jq -r ".tag_name")
+          echo ::set-output name=current_tag::$(<swagger-ui.version)
+      - name: Update Swagger UI
+        if: steps.swagger-ui.outputs.current_tag != steps.swagger-ui.outputs.release_tag
         env:
-          PULL_REQUEST_TITLE: ${{ steps.pr_title_maker.outputs.pr_title }}
-          PULL_REQUEST_BODY: Auto-generated pull request created by the GitHub Actions [create-pull-request](https://github.com/peter-evans/create-pull-request) and [ensure-latest-go](https://github.com/jmhodges/ensure-latest-go).
-          COMMIT_MESSAGE: ${{ steps.pr_title_maker.outputs.pr_title }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          BRANCH_SUFFIX: none
-          PULL_REQUEST_BRANCH: ensure-latest-go/patch-${{ steps.ensure_go.outputs.go_version }}
+          RELEASE_TAG: ${{ steps.swagger-ui.outputs.release_tag }}
+          SWAGGER_YAML: "swagger.yaml"
+        run: |
+          # Delete the dist directory and index.html
+          rm -fr dist index.html
+          # Download the release
+          curl -sL -o $RELEASE_TAG https://api.github.com/repos/swagger-api/swagger-ui/tarball/$RELEASE_TAG
+          # Extract the dist directory
+          tar -xzf $RELEASE_TAG --strip-components=1 $(tar -tzf $RELEASE_TAG | head -1 | cut -f1 -d"/")/dist
+          rm $RELEASE_TAG
+          # Move index.html to the root
+          mv dist/index.html .
+          # Fix references in index.html
+          sed -i "s|https://petstore.swagger.io/v2/swagger.json|$SWAGGER_YAML|g" index.html
+          sed -i "s|href=\"./|href=\"dist/|g" index.html
+          sed -i "s|src=\"./|src=\"dist/|g" index.html
+          # Update current release
+          echo ${{ steps.swagger-ui.outputs.release_tag }} > swagger-ui.version
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v1.7.2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: Update swagger-ui to ${{ steps.swagger-ui.outputs.release_tag }}
+          title: Update SwaggerUI to ${{ steps.swagger-ui.outputs.release_tag }}
+          body: |
+            Updates [swagger-ui][1] to ${{ steps.swagger-ui.outputs.release_tag }}
+
+            Auto-generated by [create-pull-request][2]
+
+            [1]: https://github.com/swagger-api/swagger-ui
+            [2]: https://github.com/peter-evans/create-pull-request
+          labels: dependencies, automated pr
+          branch: swagger-ui-updates
+          branch-suffix: none
 ```
 
 ### Spider and download a website
+
+This workflow spiders a website and downloads the content. Any changes to the website will be raised in a pull request.
 
 ```yml
 name: Download Website
@@ -107,14 +172,14 @@ jobs:
             --domains quotes.toscrape.com \
             http://quotes.toscrape.com/
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v1.6.1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          COMMIT_MESSAGE: update local website copy
-          PULL_REQUEST_TITLE: Automated Updates to Local Website Copy
-          PULL_REQUEST_BODY: This is an auto-generated PR with website updates.
-          PULL_REQUEST_BRANCH: website-updates
-          BRANCH_SUFFIX: none
+        uses: peter-evans/create-pull-request@v1.7.2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: update local website copy
+          title: Automated Updates to Local Website Copy
+          body: This is an auto-generated PR with website updates.
+          branch: website-updates
+          branch-suffix: none
 ```
 
 ## Use case: Create a pull request to update X by calling the GitHub API
@@ -124,25 +189,43 @@ This pattern will work well for updating any kind of static content from an exte
 
 You can modify any of the examples in the previous section to work in this fashion.
 
-1. Set the workflow to execute `on: repository_dispatch`.
-    ```
-    on:
-      repository_dispatch:
-        types: [create-pull-request]
-    ```
+Set the workflow to execute `on: repository_dispatch`.
 
-2. To trigger the workflow call the GitHub API as follows.
-    - `[username]` is a GitHub username
-    - `[token]` is a `repo` scoped [Personal Access Token](https://help.github.com/en/articles/creating-a-personal-access-token-for-the-command-line)
-    - `[repository]` is the name of the repository the workflow resides in.
-  
-      ```
-      curl -XPOST -u "[username]:[token]" \
-        -H "Accept: application/vnd.github.everest-preview+json" \
-        -H "Content-Type: application/json" \
-        https://api.github.com/repos/[username]/[repository]/dispatches \
-        --data '{"event_type": "create-pull-request"}'
-      ```
+```yml
+on:
+  repository_dispatch:
+    types: [create-pull-request]
+```
+
+### Call the GitHub API from an external service
+
+An `on: repository_dispatch` workflow can be triggered by a call to the GitHub API as follows.
+
+- `[username]` is a GitHub username
+- `[token]` is a `repo` scoped [Personal Access Token](https://help.github.com/en/articles/creating-a-personal-access-token-for-the-command-line)
+- `[repository]` is the name of the repository the workflow resides in.
+
+```
+curl -XPOST -u "[username]:[token]" \
+  -H "Accept: application/vnd.github.everest-preview+json" \
+  -H "Content-Type: application/json" \
+  https://api.github.com/repos/[username]/[repository]/dispatches \
+  --data '{"event_type": "create-pull-request"}'
+```
+
+### Call the GitHub API from another GitHub Actions workflow
+
+An `on: repository_dispatch` workflow can be triggered from another workflow with [repository-dispatch](https://github.com/peter-evans/repository-dispatch) action.
+
+```yml
+- name: Repository Dispatch
+  uses: peter-evans/repository-dispatch@v1.0.0
+  with:
+    token: ${{ secrets.REPO_ACCESS_TOKEN }}
+    repository: username/my-repo
+    event-type: create-pull-request
+    client-payload: '{"ref": "${{ github.ref }}", "sha": "${{ github.sha }}"}'
+```
 
 ## Use case: Create a pull request to modify/fix pull requests
 
@@ -181,15 +264,15 @@ jobs:
         run: echo ::set-output name=branch-name::"autopep8-patches/$GITHUB_HEAD_REF"
       - name: Create Pull Request
         if: steps.autopep8.outputs.exit-code == 2
-        uses: peter-evans/create-pull-request@v1.6.1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          COMMIT_MESSAGE: autopep8 action fixes
-          PULL_REQUEST_TITLE: Fixes by autopep8 action
-          PULL_REQUEST_BODY: This is an auto-generated PR with fixes by autopep8.
-          PULL_REQUEST_LABELS: autopep8, automated pr
-          PULL_REQUEST_BRANCH: ${{ steps.vars.outputs.branch-name }}
-          BRANCH_SUFFIX: none
+        uses: peter-evans/create-pull-request@v1.7.2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: autopep8 action fixes
+          title: Fixes by autopep8 action
+          body: This is an auto-generated PR with fixes by autopep8.
+          labels: autopep8, automated pr
+          branch: ${{ steps.vars.outputs.branch-name }}
+          branch-suffix: none
       - name: Fail if autopep8 made changes
         if: steps.autopep8.outputs.exit-code == 2
         run: exit 1
@@ -228,11 +311,11 @@ The recommended method is to use [`set-output`](https://help.github.com/en/githu
           echo ::set-output name=pr_body::"This PR was auto-generated on $(date +%d-%m-%Y) \
             by [create-pull-request](https://github.com/peter-evans/create-pull-request)."
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v1.6.1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PULL_REQUEST_TITLE: ${{ steps.vars.outputs.pr_title }}
-          PULL_REQUEST_BODY: ${{ steps.vars.outputs.pr_body }}
+        uses: peter-evans/create-pull-request@v1.7.2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          title: ${{ steps.vars.outputs.pr_title }}
+          body: ${{ steps.vars.outputs.pr_body }}
 ```
 
 Alternatively, [`set-env`](https://help.github.com/en/github/automating-your-workflow-with-github-actions/development-tools-for-github-actions#set-an-environment-variable-set-env) can be used to create environment variables.
@@ -244,9 +327,48 @@ Alternatively, [`set-env`](https://help.github.com/en/github/automating-your-wor
           echo ::set-env name=PULL_REQUEST_BODY::"This PR was auto-generated on $(date +%d-%m-%Y) \
             by [create-pull-request](https://github.com/peter-evans/create-pull-request)."
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v1.6.1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PULL_REQUEST_TITLE: ${{ env.PULL_REQUEST_TITLE }}
-          PULL_REQUEST_BODY: ${{ env.PULL_REQUEST_BODY }}
+        uses: peter-evans/create-pull-request@v1.7.2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          title: ${{ env.PULL_REQUEST_TITLE }}
+          body: ${{ env.PULL_REQUEST_BODY }}
+```
+
+### Debugging GitHub Actions
+
+#### Step Debug Logging
+
+To enable step debug logging set the secret `ACTIONS_STEP_DEBUG` to `true` in the repository that contains the workflow.
+
+#### Output Various Contexts
+
+```yml
+- name: Dump event JSON
+  env:
+    EVENT_JSON_FILENAME: ${{ github.event_path }}
+  run: cat "$EVENT_JSON_FILENAME"
+- name: Dump GitHub context
+  env:
+    GITHUB_CONTEXT: ${{ toJson(github) }}
+  run: echo "$GITHUB_CONTEXT"
+- name: Dump job context
+  env:
+    JOB_CONTEXT: ${{ toJson(job) }}
+  run: echo "$JOB_CONTEXT"
+- name: Dump steps context
+  env:
+    STEPS_CONTEXT: ${{ toJson(steps) }}
+  run: echo "$STEPS_CONTEXT"
+- name: Dump runner context
+  env:
+    RUNNER_CONTEXT: ${{ toJson(runner) }}
+  run: echo "$RUNNER_CONTEXT"
+- name: Dump strategy context
+  env:
+    STRATEGY_CONTEXT: ${{ toJson(strategy) }}
+  run: echo "$STRATEGY_CONTEXT"
+- name: Dump matrix context
+  env:
+    MATRIX_CONTEXT: ${{ toJson(matrix) }}
+  run: echo "$MATRIX_CONTEXT"
 ```
