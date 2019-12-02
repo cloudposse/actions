@@ -2,7 +2,7 @@
 
 set -x
 
-export GO111MODULE=off
+export GO111MODULE="${GO111MODULE:-on}"
 export CGO_ENABLED=0
 export GOBIN=$GOPATH/bin
 export PATH=$PATH:$GOBIN
@@ -16,9 +16,6 @@ fi
 pwd
 ls
 
-go get -u github.com/mitchellh/gox
-go get -u github.com/golang/dep/cmd/dep
-
 if [[ ! -z "$WORKING_DIR" ]]; then
   mkdir -p "${WORKING_DIR}" || exit 1
   cp -r . "${WORKING_DIR}" || exit 1
@@ -27,5 +24,11 @@ if [[ ! -z "$WORKING_DIR" ]]; then
   ls
 fi
 
-dep ensure
+go get -u github.com/mitchellh/gox
+
+if [[ "$GO111MODULE" != "on" ]]; then
+  go get -u github.com/golang/dep/cmd/dep
+  dep ensure
+fi
+
 gox -osarch="${GOX_OSARCH}" -output "${OUTPUT_PATH}{{.OS}}_{{.Arch}}"
