@@ -12,7 +12,7 @@ branch-cleanup: REF=150e4a88d2d9838299a348c631cfc3ad2ea8560b
 branch-cleanup: clone(branch-cleanup)
 
 .PHONY : auto-approve
-auto-approve: REPO=git@github.com:hmarr/auto-approve-action.git 
+auto-approve: REPO=git@github.com:hmarr/auto-approve-action.git
 auto-approve: REF=52fb28e282cc215b0ce091ca1f583538d247f1b6
 auto-approve: clone(auto-approve)
 
@@ -30,3 +30,13 @@ auto-assign: clone(auto-assign)
 create-pull-request: REPO=git@github.com:peter-evans/create-pull-request.git
 create-pull-request: REF=c9e477ec051a8fb2ef523640a5ecbfe6297514d3
 create-pull-request: clone(create-pull-request)
+
+.PHONY : slash-command-dispatch
+slash-command-dispatch: REPO=git@github.com:peter-evans/slash-command-dispatch.git
+slash-command-dispatch: REF=302daa7302b574801d901d7301de324b22b2a670
+slash-command-dispatch: clone(slash-command-dispatch)
+
+.PHONY : repository-dispatch
+repository-dispatch: REPO=git@github.com:peter-evans/repository-dispatch.git
+repository-dispatch: REF=0ae1c4b014bff102f1063cd67a53fc4a91311d1b
+repository-dispatch: clone(repository-dispatch)
