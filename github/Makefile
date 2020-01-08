@@ -40,3 +40,8 @@ slash-command-dispatch: clone(slash-command-dispatch)
 repository-dispatch: REPO=git@github.com:peter-evans/repository-dispatch.git
 repository-dispatch: REF=0ae1c4b014bff102f1063cd67a53fc4a91311d1b
 repository-dispatch: clone(repository-dispatch)
+
+.PHONY : create-or-update-comment
+create-or-update-comment: REPO=git@github.com:peter-evans/create-or-update-comment.git
+create-or-update-comment: REF=0c6f574027411cc879391be48f46bfdf84931df3
+create-or-update-comment: clone(create-or-update-comment)
