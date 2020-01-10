@@ -1,4 +1,4 @@
-all: branch-cleanup auto-approve auto-merge auto-assign create-pull-request
+all: branch-cleanup auto-approve auto-merge auto-assign create-pull-request slash-command-dispatch repository-dispatch create-or-update-comment
 
 clone(%):
 	rm -rf $%

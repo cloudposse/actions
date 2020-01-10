@@ -2,7 +2,10 @@ github/auto-approve: github/auto-approve/**
 github/auto-assign: github/auto-assign/**
 github/auto-merge: github/auto-merge/**
 github/branch-cleanup: github/branch-cleanup/**
+github/create-or-update-comment: github/create-or-update-comment/**
 github/create-pull-request: github/create-pull-request/**
 github/git-push: github/git-push/**
 github/release-assets: github/release-assets/**
+github/repository-dispatch: github/repository-dispatch/**
+github/slash-command-dispatch: github/slash-command-dispatch/**
 go/build: go/build/**
