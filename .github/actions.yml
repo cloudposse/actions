@@ -7,5 +7,5 @@ github/create-pull-request: github/create-pull-request/**
 github/git-push: github/git-push/**
 github/release-assets: github/release-assets/**
 github/repository-dispatch: github/repository-dispatch/**
-slash-command-dispatch: github/slash-command-dispatch/**
+github/slash-command-dispatch: github/slash-command-dispatch/**
 go/build: go/build/**
