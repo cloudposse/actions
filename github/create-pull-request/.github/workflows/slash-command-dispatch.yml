@@ -1,0 +1,38 @@
+name: Slash Command Dispatch
+on:
+  issue_comment:
+    types: [created]
+jobs:
+  slashCommandDispatch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Slash Command Dispatch
+        uses: peter-evans/slash-command-dispatch@v1
+        with:
+          token: ${{ secrets.REPO_ACCESS_TOKEN }}
+          reaction-token: ${{ secrets.GITHUB_TOKEN }}
+          config: >
+            [
+              {
+                "command": "test",
+                "permission": "admin",
+                "repository": "peter-evans/create-pull-request-tests",
+                "named_args": true
+              },
+              {
+                "command": "pytest",
+                "permission": "admin",
+                "repository": "peter-evans/create-pull-request-tests",
+                "named_args": true
+              },
+              {
+                "command": "clean",
+                "permission": "admin",
+                "repository": "peter-evans/create-pull-request-tests"
+              },
+              {
+                "command": "cpr-example",
+                "permission": "admin",
+                "issue_type": "issue"
+              }
+            ]
