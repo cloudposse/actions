@@ -1,0 +1,22 @@
+name: Assign reviewers
+on:
+  repository_dispatch:
+    types: [assign-reviewers-command]
+
+jobs:
+  rebuild_readme:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: cloudposse/actions/github/auto-assign@0.9.0
+        with:
+          repo-token: ${{ secrets.GITHUB_BOT_TOKEN }}
+          configuration-path: '.github/assign-reviewers.yml'
+
+      # Add reaction to the original comment
+      - name: Add reaction to the original comment
+        uses: cloudposse/actions/github/create-or-update-comment@0.9.0
+        with:
+          token: ${{ secrets.GITHUB_BOT_TOKEN }}
+          repository: ${{ github.event.client_payload.github.payload.repository.full_name }}
+          comment-id: ${{ github.event.client_payload.github.payload.comment.id }}
+          reaction-type: hooray
