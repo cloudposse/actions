@@ -4,7 +4,7 @@ on:
     types: [rebuild-readme-command]
 
 jobs:
-  rebuild_readme:
+  rebuild-readme:
     runs-on: ubuntu-latest
     steps:
       # Checkout the pull request branch

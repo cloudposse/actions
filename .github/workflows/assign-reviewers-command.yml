@@ -4,7 +4,7 @@ on:
     types: [assign-reviewers-command]
 
 jobs:
-  rebuild_readme:
+  assign-reviewers:
     runs-on: ubuntu-latest
     steps:
       - uses: cloudposse/actions/github/auto-assign@0.11.0

@@ -4,7 +4,7 @@ on:
     types: [first-interaction-greet-command]
 
 jobs:
-  rebuild_readme:
+  first-interaction-greet:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/first-interaction@v1

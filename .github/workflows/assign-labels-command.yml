@@ -4,7 +4,7 @@ on:
     types: [assign-labels-command]
 
 jobs:
-  rebuild_readme:
+  assign-labels:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/labeler@v2.1.0
