@@ -7,10 +7,27 @@ jobs:
   assign-labels:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/labeler@v2.1.0
+
+      - name: Assign labels
+        uses: actions/github-script@0.4.0
         with:
-          repo-token: ${{ secrets.GITHUB_BOT_TOKEN }}
-          configuration-path: '.github/assign-labels.yml'
+          github-token: ${{secrets.GITHUB_BOT_TOKEN}}
+          script: |
+            const changedFilesResponse = await github.pulls.listFiles({
+              pull_number: ${{ github.event.client_payload.pull_request.number }},
+              owner: ${{ github.event.client_payload.pull_request.head.repo.owner.login }},
+              repo: ${{ github.event.client_payload.pull_request.head.repo.full_name }}
+            });
+
+            // Max length of labels is 50 chars
+            const changedFiles = changedFilesResponse.data.map(f => f.filename.substring(f.filename.length - 50));
+
+            github.issues.addLabels({
+              issue_number: ${{ github.event.client_payload.pull_request.number }},
+              owner: ${{ github.event.client_payload.pull_request.head.repo.owner.login }},
+              repo: ${{ github.event.client_payload.pull_request.head.repo.full_name }},
+              labels: [...changedFiles]
+            });
 
       # Add reaction to the original comment
       - name: Add reaction to the original comment
