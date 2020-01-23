@@ -22,7 +22,7 @@ jobs:
             // Max length of labels is 50 chars
             const changedFiles = changedFilesResponse.data.map(f => f.filename.substring(f.filename.length - 50));
 
-            github.issues.addLabels({
+            await github.issues.addLabels({
               issue_number: ${{ github.event.client_payload.pull_request.number }},
               owner: ${{ github.event.client_payload.pull_request.head.repo.owner.login }},
               repo: ${{ github.event.client_payload.pull_request.head.repo.full_name }},
