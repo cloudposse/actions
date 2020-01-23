@@ -14,12 +14,12 @@ jobs:
           github-token: ${{secrets.GITHUB_BOT_TOKEN}}
           script: |
 
-            const reviewers = [
-                                'osterman',
-                                'aknysh',
-                                'goruha'
-                              ].filter((val) => val !== '${{ github.event.client_payload.pull_request.user.login }}');
+            const all_reviewers = ['osterman', 'aknysh', 'goruha'];
 
+            // Exclude the PR author from the reviewer list
+            const reviewers = all_reviewers.filter((val) => val !== '${{ github.event.client_payload.pull_request.user.login }}');
+
+            // Add reviewers
             await github.pulls.createReviewRequest({
               pull_number: ${{ github.event.client_payload.pull_request.number }},
               owner: ${{ github.event.client_payload.pull_request.head.repo.owner.login }},
@@ -27,6 +27,7 @@ jobs:
               reviewers: reviewers
             });
 
+            // Add the PR author as assignee
             await github.issues.addAssignees({
               issue_number: ${{ github.event.client_payload.pull_request.number }},
               owner: ${{ github.event.client_payload.pull_request.head.repo.owner.login }},
