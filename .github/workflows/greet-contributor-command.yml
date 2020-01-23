@@ -7,21 +7,70 @@ jobs:
   greet-contributor:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/first-interaction@v1
+      - name: Greet contributor
+        uses: actions/github-script@0.4.0
         with:
-          repo-token: ${{ secrets.GITHUB_BOT_TOKEN }}
-          issue-message: |-
-            Thank you for reporting the issue! If you haven't already [joined our slack community](https://slack.sweetops.com), then we invite you to do so.
+          github-token: ${{secrets.GITHUB_BOT_TOKEN}}
+          script: |
+            console.log('Executing Greet contributor script');
 
-            This is a great place to get help and ask questions from our AMAZING community.
+            const issueNumber = ${{ github.event.client_payload.pull_request.number }};
+            const owner = '${{ github.event.client_payload.pull_request.head.repo.owner.login }}';
+            const repo = '${{ github.event.client_payload.pull_request.head.repo.full_name }}';
+            const creator = '${{ github.event.client_payload.pull_request.user.login }}';
 
-            [![Slack Community](https://slack.cloudposse.com/badge.svg)](https://slack.cloudposse.com)
-          pr-message: |-
-            Thank you for submitting this PR! If you haven't already [joined our slack community](https://slack.sweetops.com), then we invite you to do so.
+            let firstTimeContributor = true;
+            let message = '';
 
-            We receive an overwhelming number of contributions. By joining our slack, we'll be able to review your PR faster.
+            const opts = github.issues.listForRepo.endpoint.merge({
+              owner: owner,
+              repo: repo,
+              creator: creator,
+              state: 'all'
+            });
 
-            [![Slack Community](https://slack.cloudposse.com/badge.svg)](https://slack.cloudposse.com)
+            const issues = await github.paginate(opts);
+
+            for (const issue of issues) {
+              if (issue.number === issueNumber) {
+                continue;
+              }
+
+              if (issue.pull_request) {
+                firstTimeContributor = false;
+                break;
+              }
+            }
+
+            if (firstTimeContributor) {
+              console.log('PR creator is a first time contributor');
+
+              message = `
+              Welcome @${creator}
+
+              Thank you for submitting this PR! If you haven't already [joined our slack community](https://slack.sweetops.com), then we invite you to do so.
+
+              We receive an overwhelming number of contributions. By joining our slack, we'll be able to review your PR faster.
+
+              [![Slack Community](https://slack.cloudposse.com/badge.svg)](https://slack.cloudposse.com)
+              `;
+            }
+            else {
+              console.log('PR creator is already a contributor');
+
+              message = `
+              @${creator} thanks again for your contribution!
+
+              We will review this PR shortly.
+              `;
+            }
+
+            await github.issues.createComment({
+              issue_number: issueNumber,
+              owner: owner,
+              repo: repo,
+              body: message
+            });
 
       # Add reaction to the original comment
       - name: Add reaction to the original comment

@@ -13,19 +13,26 @@ jobs:
         with:
           github-token: ${{secrets.GITHUB_BOT_TOKEN}}
           script: |
+
+            console.log('Executing Assign labels script');
+
+            const issueNumber = ${{ github.event.client_payload.pull_request.number }};
+            const owner = '${{ github.event.client_payload.pull_request.head.repo.owner.login }}';
+            const repo = '${{ github.event.client_payload.pull_request.head.repo.full_name }}';
+
             const changedFilesResponse = await github.pulls.listFiles({
-              pull_number: ${{ github.event.client_payload.pull_request.number }},
-              owner: ${{ github.event.client_payload.pull_request.head.repo.owner.login }},
-              repo: ${{ github.event.client_payload.pull_request.head.repo.full_name }}
+              pull_number: issueNumber,
+              owner: owner,
+              repo: repo
             });
 
             // Max length of labels is 50 chars
             const changedFiles = changedFilesResponse.data.map(f => f.filename.substring(f.filename.length - 50));
 
             await github.issues.addLabels({
-              issue_number: ${{ github.event.client_payload.pull_request.number }},
-              owner: ${{ github.event.client_payload.pull_request.head.repo.owner.login }},
-              repo: ${{ github.event.client_payload.pull_request.head.repo.full_name }},
+              issue_number: issueNumber,
+              owner: owner,
+              repo: repo,
               labels: [...changedFiles]
             });
 
