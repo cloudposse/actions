@@ -95,22 +95,3 @@ jobs:
               repo: repo,
               assignees: [creator]
             });
-
-            // Assign labels
-            console.log('Executing Assign labels script');
-
-            const changedFilesResponse = await github.pulls.listFiles({
-              pull_number: issueNumber,
-              owner: owner,
-              repo: repo
-            });
-
-            // Max length of labels is 50 chars
-            const changedFiles = changedFilesResponse.data.map(f => f.filename.substring(f.filename.length - 50));
-
-            await github.issues.addLabels({
-              issue_number: issueNumber,
-              owner: owner,
-              repo: repo,
-              labels: [...changedFiles]
-            });
