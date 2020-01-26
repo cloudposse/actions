@@ -1,0 +1,97 @@
+name: Pull Request Opened Command
+on:
+  repository_dispatch:
+    types: [pr-opened-command]
+
+jobs:
+  greet-contributor:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Pull Request Opened Command
+        uses: actions/github-script@0.4.0
+        with:
+          github-token: ${{secrets.GITHUB_BOT_TOKEN}}
+          script: |
+
+            const issueNumber = ${{ github.event.client_payload.github.event.pull_request.number }};
+            const owner = '${{ github.event.client_payload.github.event.repository.owner.login }}';
+            const repo = '${{ github.event.client_payload.github.event.repository.name }}';
+            const creator = '${{ github.event.client_payload.github.event.pull_request.user.login }}';
+
+            // Greet contributor
+            console.log('Executing Greet contributor script');
+
+            let firstTimeContributor = true;
+            let message = '';
+
+            const opts = github.issues.listForRepo.endpoint.merge({
+              owner: owner,
+              repo: repo,
+              creator: creator,
+              state: 'all'
+            });
+
+            const issues = await github.paginate(opts);
+
+            for (const issue of issues) {
+              if (issue.number === issueNumber) {
+                continue;
+              }
+
+              if (issue.pull_request) {
+                firstTimeContributor = false;
+                break;
+              }
+            }
+
+            if (firstTimeContributor) {
+              console.log('PR creator is a first time contributor');
+
+              message = `
+              Welcome @${creator}
+
+              Thank you for submitting this PR! If you haven't already [joined our slack community](https://slack.sweetops.com), then we invite you to do so.
+
+              We receive an overwhelming number of contributions. By joining our slack, we'll be able to review your PR faster.
+
+              [![Slack Community](https://slack.cloudposse.com/badge.svg)](https://slack.cloudposse.com)
+              `;
+            }
+            else {
+              console.log('PR creator is already a contributor');
+
+              message = `
+              @${creator} thanks again for your contribution!
+
+              We will review this PR shortly.
+              `;
+            }
+
+            await github.issues.createComment({
+              issue_number: issueNumber,
+              owner: owner,
+              repo: repo,
+              body: message
+            });
+
+            // Assign reviewers
+            console.log('Executing Assign reviewers script');
+
+            const all_reviewers = ['osterman', 'aknysh', 'goruha'];
+
+            // Exclude the PR author from the reviewer list
+            const reviewers = all_reviewers.filter((val) => val !== creator);
+
+            await github.pulls.createReviewRequest({
+              pull_number: issueNumber,
+              owner: owner,
+              repo: repo,
+              reviewers: reviewers
+            });
+
+            await github.issues.addAssignees({
+              issue_number: issueNumber,
+              owner: owner,
+              repo: repo,
+              assignees: [creator]
+            });
