@@ -22,6 +22,8 @@ jobs:
           export TERRAFORM_VERSION=0.12.19
           make terraform/install
           terraform fmt
+          cd ./examples/complete 2>/dev/null
+          terraform fmt 2>/dev/null
 
       # Commit changes (if any) to the PR branch
       - name: Commit changes to the PR branch
