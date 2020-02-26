@@ -1,0 +1,9 @@
+name: 'Run Codefresh pipeline'
+description: 'GitHub action that runs Codefresh pipeline'
+author: 'Cloud Posse <hello@cloudposse.com>'
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+branding:
+  icon: 'activity'
+  color: 'green'
