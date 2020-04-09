@@ -10,7 +10,7 @@ jobs:
       - name: Pull Request Opened Command
         uses: actions/github-script@0.4.0
         with:
-          github-token: ${{secrets.BOT_TOKEN}}
+          github-token: ${{secrets.PUBLIC_REPO_ACCESS_TOKEN}}
           script: |
 
             const issueNumber = ${{ github.event.client_payload.github.event.pull_request.number }};
