@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # Checkout the pull request branch
-      - uses: actions/checkout@v1.2.0
+      - uses: actions/checkout@v2.0.0
         with:
           token: ${{ secrets.PUBLIC_REPO_ACCESS_TOKEN }}
           repository: ${{ github.event.client_payload.pull_request.head.repo.full_name }}
