@@ -1,0 +1,23 @@
+name: docker
+on:
+  push:
+    branches:
+      - master
+  pull_request: 
+    types: [opened, synchronize, reopened]
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v1
+      - name: docker/build-and-push
+        uses: docker/build-push-action@v1
+        with:
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+          repository: ${{ github.repository }}/default
+          registry: docker.pkg.github.com
+          tag_with_ref: true
+          tag_with_sha: true
