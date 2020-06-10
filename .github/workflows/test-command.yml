@@ -42,6 +42,20 @@ jobs:
       PATH: "/usr/local/terraform/0.12/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
       MAKE_INCLUDES: Makefile
     steps:
+    # Update GitHub status for dispatch events
+    - name: "Update GitHub Status for this ref"
+      uses: docker://cloudposse/github-status-updater
+      with:
+        args: "-action update_state -ref ${{ github.event.client_payload.pull_request.head.sha }} -repo ${{ github.event.client_payload.github.payload.repository.name }}"
+      env:
+        GITHUB_TOKEN: ${{ secrets.PUBLIC_REPO_ACCESS_TOKEN }}
+        GITHUB_STATE: pending
+        GITHUB_CONTEXT: "test/readme"
+        GITHUB_DESCRIPTION: "tests started by @${{ github.event.client_payload.github.actor }}"
+        GITHUB_TARGET_URL: https://github.com/${{ github.repository }}/runs/${{ github.run_id }}
+        GITHUB_REF: ${{ github.event.client_payload.pull_request.head.ref }} 
+        GITHUB_OWNER: ${{ github.event.client_payload.github.payload.repository.owner.login }}
+
 
     # Checkout the code from GitHub Pull Request
     - name: "Checkout code for ChatOps"
@@ -83,6 +97,19 @@ jobs:
       PATH: "/usr/local/terraform/0.12/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
       MAKE_INCLUDES: Makefile
     steps:
+    # Update GitHub status for dispatch events
+    - name: "Update GitHub Status for this ref"
+      uses: docker://cloudposse/github-status-updater
+      with:
+        args: "-action update_state -ref ${{ github.event.client_payload.pull_request.head.sha }} -repo ${{ github.event.client_payload.github.payload.repository.name }}"
+      env:
+        GITHUB_TOKEN: ${{ secrets.PUBLIC_REPO_ACCESS_TOKEN }}
+        GITHUB_STATE: pending
+        GITHUB_CONTEXT: "test/bats"
+        GITHUB_DESCRIPTION: "tests started by @${{ github.event.client_payload.github.actor }}"
+        GITHUB_TARGET_URL: https://github.com/${{ github.repository }}/runs/${{ github.run_id }}
+        GITHUB_REF: ${{ github.event.client_payload.pull_request.head.ref }} 
+        GITHUB_OWNER: ${{ github.event.client_payload.github.payload.repository.owner.login }}
 
     # Checkout the code from GitHub Pull Request
     - name: "Checkout code for ChatOps"
@@ -128,6 +155,19 @@ jobs:
       PATH: "/usr/local/terraform/0.12/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
       MAKE_INCLUDES: Makefile
     steps:
+    # Update GitHub status for dispatch events
+    - name: "Update GitHub Status for this ref"
+      uses: docker://cloudposse/github-status-updater
+      with:
+        args: "-action update_state -ref ${{ github.event.client_payload.pull_request.head.sha }} -repo ${{ github.event.client_payload.github.payload.repository.name }}"
+      env:
+        GITHUB_TOKEN: ${{ secrets.PUBLIC_REPO_ACCESS_TOKEN }}
+        GITHUB_STATE: pending
+        GITHUB_CONTEXT: "test/terratest"
+        GITHUB_DESCRIPTION: "tests started by @${{ github.event.client_payload.github.actor }}"
+        GITHUB_TARGET_URL: https://github.com/${{ github.repository }}/runs/${{ github.run_id }}
+        GITHUB_REF: ${{ github.event.client_payload.pull_request.head.ref }} 
+        GITHUB_OWNER: ${{ github.event.client_payload.github.payload.repository.owner.login }}
 
     # Checkout the code from GitHub Pull Request
     - name: "Checkout code for ChatOps"
