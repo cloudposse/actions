@@ -64,6 +64,7 @@ jobs:
     # Update GitHub status for dispatch events
     - name: "Update GitHub Status for this ref"
       uses: docker://cloudposse/github-status-updater
+      with:
         args: "-action update_state -ref ${{ github.event.client_payload.pull_request.head.sha }} -repo ${{ github.event.client_payload.github.payload.repository.name }}"
       env:
         GITHUB_TOKEN: ${{ secrets.PUBLIC_REPO_ACCESS_TOKEN }}
@@ -107,6 +108,7 @@ jobs:
     # Update GitHub status for dispatch events
     - name: "Update GitHub Status for this ref"
       uses: docker://cloudposse/github-status-updater
+      with:
         args: "-action update_state -ref ${{ github.event.client_payload.pull_request.head.sha }} -repo ${{ github.event.client_payload.github.payload.repository.name }}"
       env:
         GITHUB_TOKEN: ${{ secrets.PUBLIC_REPO_ACCESS_TOKEN }}
@@ -147,7 +149,7 @@ jobs:
     # Update GitHub status for dispatch events
     - name: "Update GitHub Status for this ref"
       uses: docker://cloudposse/github-status-updater
-      #if: ${{ github.event_name == 'repository_dispatch' }}
+      with:
         args: "-action update_state -ref ${{ github.event.client_payload.pull_request.head.sha }} -repo ${{ github.event.client_payload.github.payload.repository.name }}"
       env:
         GITHUB_TOKEN: ${{ secrets.PUBLIC_REPO_ACCESS_TOKEN }}
