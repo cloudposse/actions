@@ -16,7 +16,7 @@ jobs:
 
   ping:
     runs-on: ubuntu-latest
-    if: ${{ github.event.client_payload.slash_command.arg1 == "ping" || github.event.client_payload.slash_command.arg1 == "all"}}
+    if: ${{ github.event.client_payload.slash_command.arg1 == 'ping' || github.event.client_payload.slash_command.arg1 == 'all'}}
     steps:
     # Update GitHub status for dispatch events
     - name: "Update GitHub Status for this ref"
@@ -36,7 +36,7 @@ jobs:
 
   readme:
     runs-on: ubuntu-latest
-    if: ${{ github.event.client_payload.slash_command.arg1 == "readme" || github.event.client_payload.slash_command.arg1 == "all" }}
+    if: ${{ github.event.client_payload.slash_command.arg1 == 'readme' || github.event.client_payload.slash_command.arg1 == 'all' }}
     container: cloudposse/testing.cloudposse.co:latest
     env: 
       PATH: "/usr/local/terraform/0.12/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
@@ -63,7 +63,7 @@ jobs:
 
   bats:
     runs-on: ubuntu-latest
-    if: ${{ github.event.client_payload.slash_command.arg1 == "bats" || github.event.client_payload.slash_command.arg1 == "all" }}
+    if: ${{ github.event.client_payload.slash_command.arg1 == 'bats' || github.event.client_payload.slash_command.arg1 == 'all' }}
     container: cloudposse/testing.cloudposse.co:latest
     env: 
       PATH: "/usr/local/terraform/0.12/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
@@ -94,7 +94,7 @@ jobs:
 
   terratest:
     runs-on: ubuntu-latest
-    if: ${{ github.event.client_payload.slash_command.arg1 == "terratest" || github.event.client_payload.slash_command.arg1 == "all" }}
+    if: ${{ github.event.client_payload.slash_command.arg1 == 'terratest' || github.event.client_payload.slash_command.arg1 == 'all' }}
     container: cloudposse/testing.cloudposse.co:latest
     env: 
       PATH: "/usr/local/terraform/0.12/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
