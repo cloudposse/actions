@@ -31,7 +31,7 @@ jobs:
         GITHUB_STATE: success
         GITHUB_CONTEXT: 'test/ping'
         GITHUB_DESCRIPTION: "pong"
-        GITHUB_TARGET_URL: https://github.com/${{ github.repository }}/runs/${{ github.run_id }}
+        GITHUB_TARGET_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
         GITHUB_OWNER: ${{ github.event.client_payload.github.payload.repository.owner.login }}
 
   readme:
@@ -43,7 +43,7 @@ jobs:
       MAKE_INCLUDES: Makefile
     steps:
     # Update GitHub status for dispatch events
-    - name: "Update GitHub Status for this ref"
+    - name: "Update GitHub Status for pending"
       uses: docker://cloudposse/github-status-updater
       with:
         args: "-action update_state -ref ${{ github.event.client_payload.pull_request.head.sha }} -repo ${{ github.event.client_payload.github.payload.repository.name }}"
@@ -52,7 +52,7 @@ jobs:
         GITHUB_STATE: pending
         GITHUB_CONTEXT: "test/readme"
         GITHUB_DESCRIPTION: "tests started by @${{ github.event.client_payload.github.actor }}"
-        GITHUB_TARGET_URL: https://github.com/${{ github.repository }}/runs/${{ github.run_id }}
+        GITHUB_TARGET_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
         GITHUB_REF: ${{ github.event.client_payload.pull_request.head.ref }} 
         GITHUB_OWNER: ${{ github.event.client_payload.github.payload.repository.owner.login }}
 
@@ -76,7 +76,22 @@ jobs:
       run: make readme/lint
 
     # Update GitHub status for dispatch events
-    - name: "Update GitHub Status for this ref"
+    - name: "Update GitHub Status for failure"
+      if: ${{ failure() }}
+      uses: docker://cloudposse/github-status-updater
+      with:
+        args: "-action update_state -ref ${{ github.event.client_payload.pull_request.head.sha }} -repo ${{ github.event.client_payload.github.payload.repository.name }}"
+      env:
+        GITHUB_TOKEN: ${{ secrets.PUBLIC_REPO_ACCESS_TOKEN }}
+        GITHUB_STATE: failure
+        GITHUB_CONTEXT: "test/readme"
+        GITHUB_DESCRIPTION: "tests failed"
+        GITHUB_TARGET_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        GITHUB_REF: ${{ github.event.client_payload.pull_request.head.ref }} 
+        GITHUB_OWNER: ${{ github.event.client_payload.github.payload.repository.owner.login }}
+
+    # Update GitHub status for dispatch events
+    - name: "Update GitHub Status for success"
       uses: docker://cloudposse/github-status-updater
       with:
         args: "-action update_state -ref ${{ github.event.client_payload.pull_request.head.sha }} -repo ${{ github.event.client_payload.github.payload.repository.name }}"
@@ -85,7 +100,22 @@ jobs:
         GITHUB_STATE: success
         GITHUB_CONTEXT: "test/readme"
         GITHUB_DESCRIPTION: "tests passed"
-        GITHUB_TARGET_URL: https://github.com/${{ github.repository }}/runs/${{ github.run_id }}
+        GITHUB_TARGET_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        GITHUB_REF: ${{ github.event.client_payload.pull_request.head.ref }} 
+        GITHUB_OWNER: ${{ github.event.client_payload.github.payload.repository.owner.login }}
+
+    # Update GitHub status for dispatch events
+    - name: "Update GitHub Status for cancelled"
+      if: ${{ cancelled() }}
+      uses: docker://cloudposse/github-status-updater
+      with:
+        args: "-action update_state -ref ${{ github.event.client_payload.pull_request.head.sha }} -repo ${{ github.event.client_payload.github.payload.repository.name }}"
+      env:
+        GITHUB_TOKEN: ${{ secrets.PUBLIC_REPO_ACCESS_TOKEN }}
+        GITHUB_STATE: error
+        GITHUB_CONTEXT: "test/readme"
+        GITHUB_DESCRIPTION: "tests cancelled"
+        GITHUB_TARGET_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
         GITHUB_REF: ${{ github.event.client_payload.pull_request.head.ref }} 
         GITHUB_OWNER: ${{ github.event.client_payload.github.payload.repository.owner.login }}
 
@@ -98,7 +128,7 @@ jobs:
       MAKE_INCLUDES: Makefile
     steps:
     # Update GitHub status for dispatch events
-    - name: "Update GitHub Status for this ref"
+    - name: "Update GitHub Status for pending"
       uses: docker://cloudposse/github-status-updater
       with:
         args: "-action update_state -ref ${{ github.event.client_payload.pull_request.head.sha }} -repo ${{ github.event.client_payload.github.payload.repository.name }}"
@@ -107,7 +137,7 @@ jobs:
         GITHUB_STATE: pending
         GITHUB_CONTEXT: "test/bats"
         GITHUB_DESCRIPTION: "tests started by @${{ github.event.client_payload.github.actor }}"
-        GITHUB_TARGET_URL: https://github.com/${{ github.repository }}/runs/${{ github.run_id }}
+        GITHUB_TARGET_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
         GITHUB_REF: ${{ github.event.client_payload.pull_request.head.ref }} 
         GITHUB_OWNER: ${{ github.event.client_payload.github.payload.repository.owner.login }}
 
@@ -134,7 +164,22 @@ jobs:
       run: make -C test/ examples/complete
 
     # Update GitHub status for dispatch events
-    - name: "Update GitHub Status for this ref"
+    - name: "Update GitHub Status for failure"
+      if: ${{ failure() }}
+      uses: docker://cloudposse/github-status-updater
+      with:
+        args: "-action update_state -ref ${{ github.event.client_payload.pull_request.head.sha }} -repo ${{ github.event.client_payload.github.payload.repository.name }}"
+      env:
+        GITHUB_TOKEN: ${{ secrets.PUBLIC_REPO_ACCESS_TOKEN }}
+        GITHUB_STATE: failure
+        GITHUB_CONTEXT: "test/bats"
+        GITHUB_DESCRIPTION: "tests failed"
+        GITHUB_TARGET_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        GITHUB_REF: ${{ github.event.client_payload.pull_request.head.ref }} 
+        GITHUB_OWNER: ${{ github.event.client_payload.github.payload.repository.owner.login }}
+
+    # Update GitHub status for dispatch events
+    - name: "Update GitHub Status for success"
       uses: docker://cloudposse/github-status-updater
       with:
         args: "-action update_state -ref ${{ github.event.client_payload.pull_request.head.sha }} -repo ${{ github.event.client_payload.github.payload.repository.name }}"
@@ -143,7 +188,22 @@ jobs:
         GITHUB_STATE: success
         GITHUB_CONTEXT: "test/bats"
         GITHUB_DESCRIPTION: "tests passed"
-        GITHUB_TARGET_URL: https://github.com/${{ github.repository }}/runs/${{ github.run_id }}
+        GITHUB_TARGET_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        GITHUB_REF: ${{ github.event.client_payload.pull_request.head.ref }} 
+        GITHUB_OWNER: ${{ github.event.client_payload.github.payload.repository.owner.login }}
+
+    # Update GitHub status for dispatch events
+    - name: "Update GitHub Status for cancelled"
+      if: ${{ cancelled() }}
+      uses: docker://cloudposse/github-status-updater
+      with:
+        args: "-action update_state -ref ${{ github.event.client_payload.pull_request.head.sha }} -repo ${{ github.event.client_payload.github.payload.repository.name }}"
+      env:
+        GITHUB_TOKEN: ${{ secrets.PUBLIC_REPO_ACCESS_TOKEN }}
+        GITHUB_STATE: error
+        GITHUB_CONTEXT: "test/bats"
+        GITHUB_DESCRIPTION: "tests cancelled"
+        GITHUB_TARGET_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
         GITHUB_REF: ${{ github.event.client_payload.pull_request.head.ref }} 
         GITHUB_OWNER: ${{ github.event.client_payload.github.payload.repository.owner.login }}
 
@@ -156,7 +216,7 @@ jobs:
       MAKE_INCLUDES: Makefile
     steps:
     # Update GitHub status for dispatch events
-    - name: "Update GitHub Status for this ref"
+    - name: "Update GitHub Status for pending"
       uses: docker://cloudposse/github-status-updater
       with:
         args: "-action update_state -ref ${{ github.event.client_payload.pull_request.head.sha }} -repo ${{ github.event.client_payload.github.payload.repository.name }}"
@@ -165,7 +225,7 @@ jobs:
         GITHUB_STATE: pending
         GITHUB_CONTEXT: "test/terratest"
         GITHUB_DESCRIPTION: "tests started by @${{ github.event.client_payload.github.actor }}"
-        GITHUB_TARGET_URL: https://github.com/${{ github.repository }}/runs/${{ github.run_id }}
+        GITHUB_TARGET_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
         GITHUB_REF: ${{ github.event.client_payload.pull_request.head.ref }} 
         GITHUB_OWNER: ${{ github.event.client_payload.github.payload.repository.owner.login }}
 
@@ -189,7 +249,22 @@ jobs:
         AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}  
 
     # Update GitHub status for dispatch events
-    - name: "Update GitHub Status for this ref"
+    - name: "Update GitHub Status for failure"
+      if: ${{ failure() }}
+      uses: docker://cloudposse/github-status-updater
+      with:
+        args: "-action update_state -ref ${{ github.event.client_payload.pull_request.head.sha }} -repo ${{ github.event.client_payload.github.payload.repository.name }}"
+      env:
+        GITHUB_TOKEN: ${{ secrets.PUBLIC_REPO_ACCESS_TOKEN }}
+        GITHUB_STATE: failure
+        GITHUB_CONTEXT: "test/terratest"
+        GITHUB_DESCRIPTION: "tests failed"
+        GITHUB_TARGET_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        GITHUB_REF: ${{ github.event.client_payload.pull_request.head.ref }} 
+        GITHUB_OWNER: ${{ github.event.client_payload.github.payload.repository.owner.login }}
+
+    # Update GitHub status for dispatch events
+    - name: "Update GitHub Status for this success"
       uses: docker://cloudposse/github-status-updater
       with:
         args: "-action update_state -ref ${{ github.event.client_payload.pull_request.head.sha }} -repo ${{ github.event.client_payload.github.payload.repository.name }}"
@@ -198,7 +273,22 @@ jobs:
         GITHUB_STATE: success
         GITHUB_CONTEXT: "test/terratest"
         GITHUB_DESCRIPTION: "tests passed"
-        GITHUB_TARGET_URL: https://github.com/${{ github.repository }}/runs/${{ github.run_id }}
+        GITHUB_TARGET_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        GITHUB_REF: ${{ github.event.client_payload.pull_request.head.ref }} 
+        GITHUB_OWNER: ${{ github.event.client_payload.github.payload.repository.owner.login }}
+
+    # Update GitHub status for dispatch events
+    - name: "Update GitHub Status for cancelled"
+      if: ${{ cancelled() }}
+      uses: docker://cloudposse/github-status-updater
+      with:
+        args: "-action update_state -ref ${{ github.event.client_payload.pull_request.head.sha }} -repo ${{ github.event.client_payload.github.payload.repository.name }}"
+      env:
+        GITHUB_TOKEN: ${{ secrets.PUBLIC_REPO_ACCESS_TOKEN }}
+        GITHUB_STATE: error
+        GITHUB_CONTEXT: "test/terratest"
+        GITHUB_DESCRIPTION: "tests cancelled"
+        GITHUB_TARGET_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
         GITHUB_REF: ${{ github.event.client_payload.pull_request.head.ref }} 
         GITHUB_OWNER: ${{ github.event.client_payload.github.payload.repository.owner.login }}
 
