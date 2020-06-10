@@ -243,7 +243,7 @@ jobs:
 
     # Run the terratest integration tests
     - name: "Test `examples/complete` with terratest on AWS"
-      if: ${{ contains('terraform-aws-', github.event.client_payload.github.payload.repository.name) }}
+      if: ${{ contains(github.event.client_payload.github.payload.repository.name, 'terraform-aws-') }}
       run: make -C test/src
       env:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -251,14 +251,14 @@ jobs:
 
     # Run the terratest integration tests
     - name: "Test `examples/complete` with terratest on GitHub"
-      if: ${{ contains('terraform-github-', github.event.client_payload.github.payload.repository.name) }}
+      if: ${{ contains(github.event.client_payload.github.payload.repository.name, 'terraform-github-') }}
       run: make -C test/src
       env:
         GITHUB_TOKEN: ${{ secrets.PUBLIC_REPO_ACCESS_TOKEN }}
 
     # Run the terratest integration tests
     - name: "Test `examples/complete` with terratest on AWS & GitHub"
-      if: ${{ contains('terraform-aws-', github.event.client_payload.github.payload.repository.name) && contains('-github-', github.event.client_payload.github.payload.repository.name)  }}
+      if: ${{ contains(github.event.client_payload.github.payload.repository.name, 'terraform-aws-') && contains(github.event.client_payload.github.payload.repository.name, '-github-')  }}
       run: make -C test/src
       env:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
