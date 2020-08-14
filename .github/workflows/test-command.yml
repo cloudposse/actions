@@ -3,6 +3,10 @@ on:
   repository_dispatch:
     types: [test-command]
 
+defaults:
+  run:
+    shell: bash
+
 jobs:
   ack:
     runs-on: ubuntu-latest
