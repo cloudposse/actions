@@ -18,19 +18,45 @@ jobs:
         uses: ./
         with:
           token: ${{ secrets.REPO_ACCESS_TOKEN }}
-          reaction-token: ${{ secrets.GITHUB_TOKEN }}
-          commands: hello-world-local, ping-local
+          commands: |
+            hello-world-local
+            ping-local
           permission: none
           issue-type: issue
 
       # Advanced JSON configuration
       - name: Slash Command Dispatch (JSON)
+        id: scd
         uses: ./
         with:
           token: ${{ secrets.REPO_ACCESS_TOKEN }}
-          reaction-token: ${{ secrets.GITHUB_TOKEN }}
           config: >
             [
+              {
+                "command": "rebase",
+                "permission": "admin",
+                "repository": "peter-evans/slash-command-dispatch-processor",
+                "issue_type": "pull-request"
+              },
+              {
+                "command": "help",
+                "permission": "none",
+                "issue_type": "issue",
+                "repository": "peter-evans/slash-command-dispatch-processor"
+              },
+              {
+                "command": "help",
+                "permission": "none",
+                "issue_type": "pull-request",
+                "repository": "peter-evans/slash-command-dispatch-processor",
+                "event_type_suffix": "-pr-command"
+              },
+              {
+                "command": "example",
+                "permission": "none",
+                "issue_type": "issue",
+                "repository": "peter-evans/slash-command-dispatch-processor"
+              },
               {
                 "command": "hello-world",
                 "permission": "none",
@@ -45,9 +71,22 @@ jobs:
                 "event_type_suffix": "-pr-command"
               },
               {
-                "command": "autopep8",
+                "command": "hello-workflow",
                 "permission": "none",
-                "issue_type": "pull-request",
+                "issue_type": "issue",
+                "repository": "peter-evans/slash-command-dispatch-processor",
+                "static_args": [
+                  "repository=${{ github.repository }}",
+                  "comment-id=${{ github.event.comment.id }}",
+                  "issue-number=${{ github.event.issue.number }}",
+                  "actor=${{ github.actor }}"
+                ],
+                "dispatch_type": "workflow"
+              },
+              {
+                "command": "ping",
+                "permission": "none",
+                "issue_type": "issue",
                 "repository": "peter-evans/slash-command-dispatch-processor"
               },
               {
@@ -61,20 +100,22 @@ jobs:
                 "permission": "none",
                 "issue_type": "pull-request",
                 "repository": "peter-evans/slash-command-dispatch-processor"
-              },
-              {
-                "command": "ping",
-                "permission": "none",
-                "issue_type": "issue",
-                "repository": "peter-evans/slash-command-dispatch-processor"
               }
             ]
 
+      - name: Edit comment with error message
+        if: steps.scd.outputs.error-message
+        uses: peter-evans/create-or-update-comment@v1
+        with:
+          comment-id: ${{ github.event.comment.id }}
+          body: |
+            > ${{ steps.scd.outputs.error-message }}
+
       # Advanced JSON configuration from file
+      # (These commands do not do anything and are just a reference example)
       - name: Slash Command Dispatch (JSON file)
         uses: ./
         with:
           token: ${{ secrets.REPO_ACCESS_TOKEN }}
-          reaction-token: ${{ secrets.GITHUB_TOKEN }}
           reactions: false
           config-from-file: .github/slash-command-dispatch.json

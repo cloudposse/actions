@@ -8,10 +8,13 @@ For example, the following basic configuration means that all commands must have
 
 ```yml
       - name: Slash Command Dispatch
-        uses: peter-evans/slash-command-dispatch@v1
+        uses: peter-evans/slash-command-dispatch@v2
         with:
-          token: ${{ secrets.REPO_ACCESS_TOKEN }}
-          commands: rebase, integration-test, create-ticket
+          token: ${{ secrets.PAT }}
+          commands: |
+            deploy
+            integration-test
+            build-docs
           permission: admin
 ```
 
@@ -35,10 +38,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Slash Command Dispatch
-        uses: peter-evans/slash-command-dispatch@v1
+        uses: peter-evans/slash-command-dispatch@v2
         with:
-          token: ${{ secrets.REPO_ACCESS_TOKEN }}
-          reaction-token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.PAT }}
           config: >
             [
               {
@@ -52,14 +54,18 @@ jobs:
                 "permission": "write",
                 "issue_type": "both",
                 "repository": "peter-evans/slash-command-dispatch-processor",
-                "named_args": true
+                "static_args": [
+                  "production",
+                  "region=us-east-1"
+                ]
               },
               {
                 "command": "create-ticket",
                 "permission": "write",
                 "issue_type": "issue",
                 "allow_edits": true,
-                "event_type_suffix": "-cmd"
+                "event_type_suffix": "-cmd",
+                "dispatch_type": "workflow"
               }
             ]
 ```
@@ -78,9 +84,9 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Slash Command Dispatch
-        uses: peter-evans/slash-command-dispatch@v1
+        uses: peter-evans/slash-command-dispatch@v2
         with:
-          token: ${{ secrets.REPO_ACCESS_TOKEN }}
+          token: ${{ secrets.PAT }}
           config-from-file: .github/slash-command-dispatch.json
 ```
 
@@ -90,15 +96,16 @@ Advanced configuration requires a combination of yaml based inputs and JSON conf
 
 | Input | JSON Property | Description | Default |
 | --- | --- | --- | --- |
-| `token` | | (**required**) A `repo` scoped [PAT](https://help.github.com/en/github/authenticating-to-github/creating-a-personal-access-token-for-the-command-line). | |
-| `reaction-token` | | `GITHUB_TOKEN` or a `repo` scoped [PAT](https://help.github.com/en/github/authenticating-to-github/creating-a-personal-access-token-for-the-command-line). | |
+| `token` | | (**required**) A `repo` scoped [Personal Access Token (PAT)](https://help.github.com/en/github/authenticating-to-github/creating-a-personal-access-token-for-the-command-line). Note: `GITHUB_TOKEN` *does not* work here. See [token](https://github.com/peter-evans/slash-command-dispatch#token) for further details. | |
+| `reaction-token` | | `GITHUB_TOKEN` or a `repo` scoped [Personal Access Token (PAT)](https://help.github.com/en/github/authenticating-to-github/creating-a-personal-access-token-for-the-command-line). See [reaction-token](https://github.com/peter-evans/slash-command-dispatch#reaction-token) for further details. | `GITHUB_TOKEN` |
 | `reactions` | | Add reactions. :eyes: = seen, :rocket: = dispatched | `true` |
 | | `command` | (**required**) The slash command. | |
-| | `permission` | The repository permission level required by the user to dispatch commands. (`none`, `read`, `write`, `admin`) | `write` |
-| | `issue_type` | The issue type required for commands. (`issue`, `pull-request`, `both`) | `both` |
+| | `permission` | The repository permission level required by the user to dispatch the command. (`none`, `read`, `triage`, `write`, `maintain`, `admin`) | `write` |
+| | `issue_type` | The issue type required for the command. (`issue`, `pull-request`, `both`) | `both` |
 | | `allow_edits` | Allow edited comments to trigger command dispatches. | `false` |
 | | `repository` | The full name of the repository to send the dispatch events. | Current repository |
-| | `event_type_suffix` | The repository dispatch event type suffix for the commands. | `-command` |
-| | `named_args` | Parse named arguments and add them to the command payload. | `false` |
-| `config` | | JSON configuration for commands. See [Advanced configuration](#advanced-configuration) | |
-| `config-from-file` | | JSON configuration from a file for commands. See [Advanced configuration](#advanced-configuration) | |
+| | `event_type_suffix` | The repository dispatch event type suffix for the command. | `-command` |
+| | `static_args` | A string array of arguments that will be dispatched with the command. | `[]` |
+| | `dispatch_type` | The dispatch type; `repository` or `workflow`. | `repository` |
+| `config` | | JSON configuration for commands. | |
+| `config-from-file` | | JSON configuration from a file for commands. | |

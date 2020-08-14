@@ -33,7 +33,7 @@ create-pull-request: clone(create-pull-request)
 
 .PHONY : slash-command-dispatch
 slash-command-dispatch: REPO=git@github.com:peter-evans/slash-command-dispatch.git
-slash-command-dispatch: REF=302daa7302b574801d901d7301de324b22b2a670
+slash-command-dispatch: REF=bc81a15cde4033c8fff755c959f2568a29544b82
 slash-command-dispatch: clone(slash-command-dispatch)
 
 .PHONY : repository-dispatch
