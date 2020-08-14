@@ -151,22 +151,22 @@ jobs:
     - name: "Determine required terraform version"
       run: |
         FORMAT="::set-env name=PATH::/usr/local/terraform/%s/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
-        if [[ ${GITHUB_REF} == 'refs/heads/master' ]]; then
+        if [[ ${BASE_REF} == 'refs/heads/master' ]]; then
           echo "Requiring terraform 0.13..."
           printf $FORMAT 0.13
-        elif [[ ${GITHUB_REF} == 'refs/heads/0.12/master' ]]; then
+        elif [[ ${BASE_REF} == 'refs/heads/0.12/master' ]]; then
           echo "Requiring terraform 0.12..."
           printf $FORMAT 0.12
-        elif [[ ${GITHUB_REF} == 'refs/heads/0.11/master' ]]; then
+        elif [[ ${BASE_REF} == 'refs/heads/0.11/master' ]]; then
           echo "Requiring terraform 0.11..."
           printf $FORMAT 0.11
         else
-          echo "Unable to determine terraform version for ${GITHUB_REF}"
+          echo "Unable to determine terraform version for ${BASE_REF}"
           exit 1
         fi
       env:
         # Pull request target branch
-        GITHUB_REF: ${{ github.event.client_payload.pull_request.base.ref }}
+        BASE_REF: ${{ github.event.client_payload.pull_request.base.ref }}
 
     # Initialize the test-harness which has a library of bats tests
     - name: "Initialize test-harness"
@@ -259,22 +259,22 @@ jobs:
     - name: "Determine required terraform version"
       run: |
         FORMAT="::set-env name=PATH::/usr/local/terraform/%s/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
-        if [[ ${GITHUB_REF} == 'refs/heads/master' ]]; then
+        if [[ ${BASE_REF} == 'refs/heads/master' ]]; then
           echo "Requiring terraform 0.13..."
           printf $FORMAT 0.13
-        elif [[ ${GITHUB_REF} == 'refs/heads/0.12/master' ]]; then
+        elif [[ ${BASE_REF} == 'refs/heads/0.12/master' ]]; then
           echo "Requiring terraform 0.12..."
           printf $FORMAT 0.12
-        elif [[ ${GITHUB_REF} == 'refs/heads/0.11/master' ]]; then
+        elif [[ ${BASE_REF} == 'refs/heads/0.11/master' ]]; then
           echo "Requiring terraform 0.11..."
           printf $FORMAT 0.11
         else
-          echo "Unable to determine terraform version for ${GITHUB_REF}"
+          echo "Unable to determine terraform version for ${BASE_REF}"
           exit 1
         fi
       env:
         # Pull request target branch
-        GITHUB_REF: ${{ github.event.client_payload.pull_request.base.ref }}
+        BASE_REF: ${{ github.event.client_payload.pull_request.base.ref }}
 
     # Initialize the terratest go project
     - name: "Initialize terratest go project"
