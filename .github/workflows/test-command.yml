@@ -150,18 +150,16 @@ jobs:
     # Determine requied version of terraform based on the target branch of the pull request. Then update the PATH to use it.
     - name: "Determine required terraform version"
       run: |
-        FORMAT="::set-env name=PATH::/usr/local/terraform/%s/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
-        if [[ ${BASE_REF} == 'refs/heads/master' ]]; then
-          echo "Requiring terraform 0.13..."
-          printf $FORMAT 0.13
-        elif [[ ${BASE_REF} == 'refs/heads/0.12/master' ]]; then
-          echo "Requiring terraform 0.12..."
-          printf $FORMAT 0.12
-        elif [[ ${BASE_REF} == 'refs/heads/0.11/master' ]]; then
-          echo "Requiring terraform 0.11..."
-          printf $FORMAT 0.11
+        VERSION=$(cut -d/ -f1 <<<${BASE_REF})
+        if [[ ${VERSION} == 'master' ]]; then
+          VERSION=0.13
+        fi
+
+        echo "Terraform ${VERSION} is required for ${BASE_REF}..."
+        if [ -x "/usr/local/terraform/${VERSION}/bin/terraform" ]; then
+          printf "::set-env name=PATH::/usr/local/terraform/%s/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" ${VERSION}
         else
-          echo "Unable to determine terraform version for ${BASE_REF}"
+          echo "Unable to locate executable for terraform ${VERSION}"
           exit 1
         fi
       env:
@@ -258,18 +256,16 @@ jobs:
     # Determine requied version of terraform based on the target branch of the pull request. Then update the PATH to use it.
     - name: "Determine required terraform version"
       run: |
-        FORMAT="::set-env name=PATH::/usr/local/terraform/%s/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
-        if [[ ${BASE_REF} == 'refs/heads/master' ]]; then
-          echo "Requiring terraform 0.13..."
-          printf $FORMAT 0.13
-        elif [[ ${BASE_REF} == 'refs/heads/0.12/master' ]]; then
-          echo "Requiring terraform 0.12..."
-          printf $FORMAT 0.12
-        elif [[ ${BASE_REF} == 'refs/heads/0.11/master' ]]; then
-          echo "Requiring terraform 0.11..."
-          printf $FORMAT 0.11
+        VERSION=$(cut -d/ -f1 <<<${BASE_REF})
+        if [[ ${VERSION} == 'master' ]]; then
+          VERSION=0.13
+        fi
+
+        echo "Terraform ${VERSION} is required for ${BASE_REF}..."
+        if [ -x "/usr/local/terraform/${VERSION}/bin/terraform" ]; then
+          printf "::set-env name=PATH::/usr/local/terraform/%s/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" ${VERSION}
         else
-          echo "Unable to determine terraform version for ${BASE_REF}"
+          echo "Unable to locate executable for terraform ${VERSION}"
           exit 1
         fi
       env:
