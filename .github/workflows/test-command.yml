@@ -5,7 +5,8 @@ on:
 
 defaults:
   run:
-    shell: bash
+    # We need -e -o pipefail for consistency with GitHub Actions's default behavior
+    shell: bash -e -o pipefail {0}
 
 jobs:
   ack:
