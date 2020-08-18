@@ -19,7 +19,7 @@ jobs:
         shell: bash
         run: |
           make init
-          make terraform/install TERRAFORM_VERSION=0.12.19
+          make terraform/install TERRAFORM_VERSION=0.12.29
           terraform fmt -recursive
 
       # Commit changes (if any) to the PR branch
