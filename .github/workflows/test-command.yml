@@ -257,6 +257,13 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.PUBLIC_REPO_ACCESS_TOKEN }}
 
     # Run the terratest integration tests
+    - name: "Test `examples/complete` with terratest on Opsgenie"
+      if: ${{ contains(github.event.client_payload.github.payload.repository.name, 'terraform-opsgenie-') }}
+      run: make -C test/src
+      env:
+        OPSGENIE_API_KEY: ${{ secrets.OPSGENIE_API_KEY }}
+
+    # Run the terratest integration tests
     - name: "Test `examples/complete` with terratest on AWS & GitHub"
       if: ${{ contains(github.event.client_payload.github.payload.repository.name, 'terraform-aws-') && ( contains(github.event.client_payload.github.payload.repository.name, '-github-') || contains(github.event.client_payload.pull_request.labels.*.name, 'terraform-github-provider') ) }}
       run: make -C test/src
