@@ -256,7 +256,6 @@ jobs:
 
     # Run the terratest integration tests with only GitHub credentials
     - name: "Test `examples/complete` with terratest on GitHub"
-      # Add terraform-null-label explicitly, as the other terraform-null- repos do not yet have tests
       if: ${{ contains(github.event.client_payload.github.payload.repository.name, 'terraform-github-') }}
       run: make -C test/src
       env:
