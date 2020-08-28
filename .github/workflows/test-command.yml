@@ -157,7 +157,7 @@ jobs:
       run: |
         VERSION=$(cut -d/ -f1 <<<${BASE_REF})
         if [[ ${VERSION} == 'master' ]]; then
-          VERSION=0.13
+          VERSION=0.12
         fi
  
         OVERRIDE_VERSION=$(grep -Eo 'terraform/\d+\.\d+' <<<${LABELS} | cut -d/ -f2)
@@ -272,7 +272,7 @@ jobs:
       run: |
         VERSION=$(cut -d/ -f1 <<<${BASE_REF})
         if [[ ${VERSION} == 'master' ]]; then
-          VERSION=0.13
+          VERSION=0.12
         fi
 
         OVERRIDE_VERSION=$(grep -Eo 'terraform/\d+\.\d+' <<<${LABELS} | cut -d/ -f2)
