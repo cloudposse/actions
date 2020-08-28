@@ -293,6 +293,7 @@ jobs:
       env:
         # Pull request target branch
         BASE_REF: ${{ github.event.client_payload.pull_request.base.ref }}
+        LABELS: ${{ join(github.event.client_payload.pull_request.labels.*.name, '\n') }}
 
     # Initialize the terratest go project
     - name: "Initialize terratest go project"
