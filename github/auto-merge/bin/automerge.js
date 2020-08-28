@@ -4,12 +4,22 @@ const process = require("process");
 
 const fse = require("fs-extra");
 const { ArgumentParser } = require("argparse");
-const Octokit = require("@octokit/rest");
+const { Octokit } = require("@octokit/rest");
 
-const { ClientError, NeutralExitError, logger } = require("../lib/common");
+const { ClientError, logger, createConfig } = require("../lib/common");
 const { executeLocally, executeGitHubAction } = require("../lib/api");
 
 const pkg = require("../package.json");
+
+const OLD_CONFIG = [
+  "MERGE_LABEL",
+  "UPDATE_LABEL",
+  "LABELS",
+  "AUTOMERGE",
+  "AUTOREBASE",
+  "COMMIT_MESSAGE_TEMPLATE",
+  "TOKEN"
+];
 
 async function main() {
   const parser = new ArgumentParser({
@@ -40,29 +50,16 @@ async function main() {
     logger.level = "debug";
   }
 
-  const token = process.env.TOKEN || env("GITHUB_TOKEN");
+  checkOldConfig();
+
+  const token = env("GITHUB_TOKEN");
 
   const octokit = new Octokit({
     auth: `token ${token}`,
     userAgent: "pascalgn/automerge-action"
   });
 
-  const labels = parseLabels(process.env.LABELS);
-  const automerge = process.env.AUTOMERGE || "automerge";
-  const autorebase = process.env.AUTOREBASE || "autorebase";
-  const mergeMethod = process.env.MERGE_METHOD || "merge";
-  const mergeForks = process.env.MERGE_FORKS !== "false";
-  const commitMessageTemplate =
-    process.env.COMMIT_MESSAGE_TEMPLATE || "automatic";
-  const config = {
-    labels,
-    automerge,
-    autorebase,
-    mergeMethod,
-    mergeForks,
-    commitMessageTemplate
-  };
-
+  const config = createConfig(process.env);
   logger.debug("Configuration:", config);
 
   const context = { token, octokit, config };
@@ -80,6 +77,25 @@ async function main() {
   }
 }
 
+function checkOldConfig() {
+  let error = false;
+  for (const old of OLD_CONFIG) {
+    if (process.env[old] != null) {
+      logger.error("Old configuration option present:", old);
+      error = true;
+    }
+  }
+  if (error) {
+    logger.error(
+      "You have passed configuration options that were used by an old " +
+        "version of this action. Please see " +
+        "https://github.com/pascalgn/automerge-action for the latest " +
+        "documentation of the configuration options!"
+    );
+    throw new Error(`old configuration present!`);
+  }
+}
+
 function env(name) {
   const val = process.env[name];
   if (!val || !val.length) {
@@ -88,26 +104,9 @@ function env(name) {
   return val;
 }
 
-function parseLabels(str) {
-  const labels = {
-    required: [],
-    blocking: []
-  };
-  if (str) {
-    const arr = str.split(",").map(s => s.trim());
-    labels.required = arr.filter(s => !s.startsWith("!"));
-    labels.blocking = arr
-      .filter(s => s.startsWith("!") && s.length > 1)
-      .map(s => s.substr(1));
-  }
-  return labels;
-}
-
 if (require.main === module) {
   main().catch(e => {
-    if (e instanceof NeutralExitError) {
-      process.exitCode = 0;
-    } else if (e instanceof ClientError) {
+    if (e instanceof ClientError) {
       process.exitCode = 2;
       logger.error(e);
     } else {
