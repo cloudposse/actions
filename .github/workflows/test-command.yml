@@ -159,18 +159,19 @@ jobs:
         if [[ ${VERSION} == 'master' ]]; then
           VERSION=0.12
         fi
- 
-        OVERRIDE_VERSION=$(grep -Eo 'terraform/\d+\.\d+' <<<${LABELS} | cut -d/ -f2)
+
+        # Match lables like `terraform/0.12` or nothing (to prevent non-zero exit code) 
+        OVERRIDE_VERSION=$(grep -Eo '(terraform/\d+\.\d+|)' <<<${LABELS} | cut -d/ -f2)
 
         if [ -n "${OVERRIDE_VERSION}" ]; then
           VERSION=${OVERRIDE_VERSION}
-          echo "Terraform ${VERSION} is required based on labels"
+          echo "Terraform ${VERSION} is required based on labels..."
         else
           echo "Terraform ${VERSION} is required for ${BASE_REF}..."
         fi
 
         if [ -x "/usr/local/terraform/${VERSION}/bin/terraform" ]; then
-          printf "::set-env name=PATH::/usr/local/terraform/%s/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" ${VERSION}
+          printf "::set-env name=PATH::/usr/local/terraform/%s/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin\n" ${VERSION}
         else
           echo "Unable to locate executable for terraform ${VERSION}"
           exit 1
@@ -275,17 +276,18 @@ jobs:
           VERSION=0.12
         fi
 
-        OVERRIDE_VERSION=$(grep -Eo 'terraform/\d+\.\d+' <<<${LABELS} | cut -d/ -f2)
+        # Match lables like `terraform/0.12` or nothing (to prevent non-zero exit code) 
+        OVERRIDE_VERSION=$(grep -Eo '(terraform/\d+\.\d+|)' <<<${LABELS} | cut -d/ -f2)
 
         if [ -n "${OVERRIDE_VERSION}" ]; then
           VERSION=${OVERRIDE_VERSION}
-          echo "Terraform ${VERSION} is required based on labels"
+          echo "Terraform ${VERSION} is required based on labels..."
         else
           echo "Terraform ${VERSION} is required for ${BASE_REF}..."
         fi
 
         if [ -x "/usr/local/terraform/${VERSION}/bin/terraform" ]; then
-          printf "::set-env name=PATH::/usr/local/terraform/%s/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" ${VERSION}
+          printf "::set-env name=PATH::/usr/local/terraform/%s/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin\n" ${VERSION}
         else
           echo "Unable to locate executable for terraform ${VERSION}"
           exit 1
