@@ -159,8 +159,16 @@ jobs:
         if [[ ${VERSION} == 'master' ]]; then
           VERSION=0.13
         fi
+ 
+        OVERRIDE_VERSION=$(grep -Eo 'terraform/\d+\.\d+' <<<${LABELS} | cut -d/ -f2)
 
-        echo "Terraform ${VERSION} is required for ${BASE_REF}..."
+        if [ -n "${OVERRIDE_VERSION}" ]; then
+          VERSION=${OVERRIDE_VERSION}
+          echo "Terraform ${VERSION} is required based on labels"
+        else
+          echo "Terraform ${VERSION} is required for ${BASE_REF}..."
+        fi
+
         if [ -x "/usr/local/terraform/${VERSION}/bin/terraform" ]; then
           printf "::set-env name=PATH::/usr/local/terraform/%s/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" ${VERSION}
         else
@@ -170,6 +178,7 @@ jobs:
       env:
         # Pull request target branch
         BASE_REF: ${{ github.event.client_payload.pull_request.base.ref }}
+        LABELS: ${{ join(github.event.client_payload.pull_request.labels.*.name, '\n') }}
 
     # Initialize the test-harness which has a library of bats tests
     - name: "Initialize test-harness"
