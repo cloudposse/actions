@@ -13,12 +13,12 @@ branch-cleanup: clone(branch-cleanup)
 
 .PHONY : auto-approve
 auto-approve: REPO=git@github.com:hmarr/auto-approve-action.git
-auto-approve: REF=52fb28e282cc215b0ce091ca1f583538d247f1b6
+auto-approve: REF=a7a5750502749ef7f56c5e355b2083ce5dbda121
 auto-approve: clone(auto-approve)
 
 .PHONY : auto-merge
 auto-merge: REPO=git@github.com:pascalgn/automerge-action.git
-auto-merge: REF=6d8643b52af0466d0f190ebb4901f25184bdd3c5
+auto-merge: REF=4775c532c615e0491d53bc42c0893840ae7cc07a
 auto-merge: clone(auto-merge)
 
 .PHONY : auto-assign

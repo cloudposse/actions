@@ -1,6 +1,7 @@
-const Octokit = require("@octokit/rest");
+const { Octokit } = require("@octokit/rest");
 
 const { executeLocally } = require("../lib/api");
+const { createConfig } = require("../lib/common");
 
 async function main() {
   require("dotenv").config();
@@ -12,11 +13,13 @@ async function main() {
     userAgent: "pascalgn/automerge-action-it"
   });
 
-  const labels = { required: [], blocking: [] };
-  const automerge = "it-automerge";
-  const autorebase = "it-autorebase";
-  const mergeMethod = "merge";
-  const config = { labels, automerge, autorebase, mergeMethod };
+  const config = createConfig({
+    UPDATE_LABELS: "it-update",
+    MERGE_LABELS: "it-merge",
+    MERGE_REMOVE_LABELS: "it-merge",
+    MERGE_RETRIES: "3",
+    MERGE_RETRY_SLEEP: "2000"
+  });
 
   const context = { token, octokit, config };
 
