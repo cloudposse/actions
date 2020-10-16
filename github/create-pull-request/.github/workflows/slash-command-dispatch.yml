@@ -7,20 +7,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Slash Command Dispatch
-        uses: peter-evans/slash-command-dispatch@v1
+        uses: peter-evans/slash-command-dispatch@v2
         with:
-          token: ${{ secrets.REPO_ACCESS_TOKEN }}
-          reaction-token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.ACTIONS_BOT_TOKEN }}
           config: >
             [
               {
                 "command": "test",
-                "permission": "admin",
-                "repository": "peter-evans/create-pull-request-tests",
-                "named_args": true
-              },
-              {
-                "command": "pytest",
                 "permission": "admin",
                 "repository": "peter-evans/create-pull-request-tests",
                 "named_args": true
@@ -34,5 +27,11 @@ jobs:
                 "command": "cpr-example",
                 "permission": "admin",
                 "issue_type": "issue"
+              },
+              {
+                "command": "rebase",
+                "permission": "admin",
+                "repository": "peter-evans/slash-command-dispatch-processor",
+                "issue_type": "pull-request"
               }
             ]
