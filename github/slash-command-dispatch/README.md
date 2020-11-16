@@ -17,7 +17,7 @@ In repositories with a lot of activity, the workflow queue will get backed up ve
 
 Dispatching commands to be processed elsewhere keeps the workflow queue moving quickly. It essentially enables parallel processing of workflows.
 
-A additional benefit of dispatching is that it allows non-sensitive workloads to be run in public repositories to save using private repository GitHub Action minutes.
+An additional benefit of dispatching is that it allows non-sensitive workloads to be run in public repositories to save using private repository GitHub Action minutes.
 
 <div align="center"><img src="docs/assets/slash-command-dispatch.png" width="550"></div>
 
@@ -63,7 +63,7 @@ jobs:
             build-docs
 ```
 
-Note that not specifying the `repository` input will mean that dispatch events are created in the *current* repository by default. It's perfectly fine to use the current repository and not dispatch events to a seperate "processor" repository.
+Note that not specifying the `repository` input will mean that dispatch events are created in the *current* repository by default. It's perfectly fine to use the current repository and not dispatch events to a separate "processor" repository.
 
 This action also features [advanced configuration](docs/advanced-configuration.md) that allows each command to be configured individually if necessary. Use the standard configuration shown above unless you require advanced features.
 
@@ -71,8 +71,8 @@ This action also features [advanced configuration](docs/advanced-configuration.m
 
 | Input | Description | Default |
 | --- | --- | --- |
-| `token` | (**required**) A `repo` scoped [Personal Access Token (PAT)](https://help.github.com/en/github/authenticating-to-github/creating-a-personal-access-token-for-the-command-line). Note: `GITHUB_TOKEN` *does not* work here. See [token](#token) for further details. | |
-| `reaction-token` | `GITHUB_TOKEN` or a `repo` scoped [Personal Access Token (PAT)](https://help.github.com/en/github/authenticating-to-github/creating-a-personal-access-token-for-the-command-line). See [reaction-token](#reaction-token) for further details. | `GITHUB_TOKEN` |
+| `token` | (**required**) A `repo` scoped [Personal Access Token (PAT)](https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token). Note: `GITHUB_TOKEN` *does not* work here. See [token](#token) for further details. | |
+| `reaction-token` | `GITHUB_TOKEN` or a `repo` scoped [Personal Access Token (PAT)](https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token). See [reaction-token](#reaction-token) for further details. | `GITHUB_TOKEN` |
 | `reactions` | Add reactions. :eyes: = seen, :rocket: = dispatched | `true` |
 | `commands` | (**required**) A comma or newline separated list of commands. | |
 | `permission` | The repository permission level required by the user to dispatch commands. See [permission](#permission) for further details. (`none`, `read`, `triage`, `write`, `maintain`, `admin`) | `write` |
@@ -87,15 +87,15 @@ This action also features [advanced configuration](docs/advanced-configuration.m
 
 #### `token`
 
-This action creates [repository_dispatch](https://developer.github.com/v3/repos/#create-a-repository-dispatch-event) and [workflow_dispatch](https://docs.github.com/en/actions/reference/events-that-trigger-workflows#workflow_dispatch) events.
-The default `GITHUB_TOKEN` does not have scopes to create these events, so a `repo` scoped [PAT](https://help.github.com/en/github/authenticating-to-github/creating-a-personal-access-token-for-the-command-line) is required.
+This action creates [repository_dispatch](https://docs.github.com/en/actions/reference/events-that-trigger-workflows#repository_dispatch) and [workflow_dispatch](https://docs.github.com/en/actions/reference/events-that-trigger-workflows#workflow_dispatch) events.
+The default `GITHUB_TOKEN` does not have scopes to create these events, so a `repo` scoped [PAT](https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token) is required.
 If you will be dispatching commands to public repositories *only* then you can use the more limited `public_repo` scope.
 
 #### `reaction-token`
 
 If you don't specify a token for `reaction-token` it will use the default `GITHUB_TOKEN`.
 Reactions to comments will then be made by the @github-actions bot user.
-You can use a [PAT](https://help.github.com/en/github/authenticating-to-github/creating-a-personal-access-token-for-the-command-line) if you would prefer reactions to be made by the user account associated with the PAT. 
+You can use a [PAT](https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token) if you would prefer reactions to be made by the user account associated with the PAT. 
 
 ```yml
       - name: Slash Command Dispatch
@@ -115,14 +115,14 @@ This input sets the repository permission level required by the user to dispatch
 It expects one of the [five repository permission levels](https://docs.github.com/en/github/setting-up-and-managing-organizations-and-teams/repository-permission-levels-for-an-organization#permission-levels-for-repositories-owned-by-an-organization), or `none`.
 From the least to greatest permission level they are `none`, `read`, `triage`, `write`, `maintain` and `admin`.
 
-Setting `write` as the required permission level means that any user with `write`, `maintain` or `admin` will be able to execute commands.
+Setting `write` as the required permission level means that any user with `write`, `maintain` or `admin` permission level will be able to execute commands.
 
-Note that `read`, `triage` and `maintain` only make sense for organization repositories.
+Note that `read`, `triage` and `maintain` are only applicable to organization repositories.
 For repositories owned by a user account there are only two permission levels, the repository owner (`admin`) and collaborators (`write`).
 
 #### `dispatch-type`
 
-By default, the action creates [repository_dispatch](https://developer.github.com/v3/repos/#create-a-repository-dispatch-event) events.
+By default, the action creates [repository_dispatch](https://docs.github.com/en/actions/reference/events-that-trigger-workflows#repository_dispatch) events.
 Setting `dispatch-type` to `workflow` will instead create [workflow_dispatch](https://docs.github.com/en/actions/reference/events-that-trigger-workflows#workflow_dispatch) events.
 There are significant differences in the action's behaviour when using `workflow` dispatch. See [workflow dispatch](docs/workflow-dispatch.md) for usage details.
 
@@ -169,7 +169,7 @@ Commands are dispatched with a payload containing a number of contexts.
 #### `slash_command` context
 
 The slash command context contains the command and any arguments that were supplied by the user.
-It will also contain any static arguments, if configured.
+It will also contain any static arguments if configured.
 
 To demonstrate, take the following configuration as an example.
 ```yml
@@ -223,7 +223,7 @@ The properties in the `slash_command` context from the above example can be used
 #### `github` and `pull_request` contexts
 
 The payload contains the `github` context of the `issue_comment` event at path `github.event.client_payload.github`.
-Additionally, if the comment was made in a pull request, the action calls the [GitHub API to fetch the pull request detail](https://developer.github.com/v3/pulls/#get-a-single-pull-request) and attach it to the payload at path `github.event.client_payload.pull_request`.
+Additionally, if the comment was made in a pull request, the action calls the [GitHub API to fetch the pull request detail](https://docs.github.com/en/rest/reference/pulls#get-a-pull-request) and attach it to the payload at path `github.event.client_payload.pull_request`.
 
 You can inspect the payload with the following step.
 ```yml

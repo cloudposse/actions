@@ -33,7 +33,9 @@ create-pull-request: clone(create-pull-request)
 
 .PHONY : slash-command-dispatch
 slash-command-dispatch: REPO=git@github.com:peter-evans/slash-command-dispatch.git
-slash-command-dispatch: REF=bc81a15cde4033c8fff755c959f2568a29544b82
+# 2ce216db0db639b326cba0e4c9ce0ad0896791ff is after v2.1.2 but before the next release
+# Used because it is the oldest version that has the replacement for set-env
+slash-command-dispatch: REF=2ce216db0db639b326cba0e4c9ce0ad0896791ff
 slash-command-dispatch: clone(slash-command-dispatch)
 
 .PHONY : repository-dispatch
