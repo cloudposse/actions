@@ -171,7 +171,7 @@ jobs:
         fi
 
         if [ -x "/usr/local/terraform/${VERSION}/bin/terraform" ]; then
-          printf "::set-env name=PATH::/usr/local/terraform/%s/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin\n" ${VERSION}
+          printf "PATH=/usr/local/terraform/%s/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin\n" ${VERSION} >> "$GITHUB_ENV"
         else
           echo "Unable to locate executable for terraform ${VERSION}"
           exit 1
@@ -287,7 +287,7 @@ jobs:
         fi
 
         if [ -x "/usr/local/terraform/${VERSION}/bin/terraform" ]; then
-          printf "::set-env name=PATH::/usr/local/terraform/%s/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin\n" ${VERSION}
+          printf "PATH=/usr/local/terraform/%s/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin\n" ${VERSION} >> "$GITHUB_ENV"
         else
           echo "Unable to locate executable for terraform ${VERSION}"
           exit 1
