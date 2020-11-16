@@ -45,5 +45,7 @@ repository-dispatch: clone(repository-dispatch)
 
 .PHONY : create-or-update-comment
 create-or-update-comment: REPO=git@github.com:peter-evans/create-or-update-comment.git
-create-or-update-comment: REF=0c6f574027411cc879391be48f46bfdf84931df3
+# 1a85b6614033a04e3a82c1d567d228facceb805c is after v1.4.3 but before the next release
+# Used because it is the oldest version that has the replacement for set-env
+create-or-update-comment: REF=1a85b6614033a04e3a82c1d567d228facceb805c
 create-or-update-comment: clone(create-or-update-comment)

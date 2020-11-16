@@ -97,7 +97,7 @@ const utils_1 = __webpack_require__(5278);
  *
  * Examples:
  *   ::warning::This is the message
- *   ::set-env name=MY_VAR::some value
+ *
  */
 function issueCommand(command, properties, message) {
     const cmd = new Command(command, properties, message);
