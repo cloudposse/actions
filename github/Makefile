@@ -33,15 +33,19 @@ create-pull-request: clone(create-pull-request)
 
 .PHONY : slash-command-dispatch
 slash-command-dispatch: REPO=git@github.com:peter-evans/slash-command-dispatch.git
-slash-command-dispatch: REF=bc81a15cde4033c8fff755c959f2568a29544b82
+# 2ce216db0db639b326cba0e4c9ce0ad0896791ff is after v2.1.2 but before the next release
+# Used because it is the oldest version that has the replacement for set-env
+slash-command-dispatch: REF=2ce216db0db639b326cba0e4c9ce0ad0896791ff
 slash-command-dispatch: clone(slash-command-dispatch)
 
 .PHONY : repository-dispatch
 repository-dispatch: REPO=git@github.com:peter-evans/repository-dispatch.git
-repository-dispatch: REF=0ae1c4b014bff102f1063cd67a53fc4a91311d1b
+repository-dispatch: REF=v1.1.3
 repository-dispatch: clone(repository-dispatch)
 
 .PHONY : create-or-update-comment
 create-or-update-comment: REPO=git@github.com:peter-evans/create-or-update-comment.git
-create-or-update-comment: REF=0c6f574027411cc879391be48f46bfdf84931df3
+# 1a85b6614033a04e3a82c1d567d228facceb805c is after v1.4.3 but before the next release
+# Used because it is the oldest version that has the replacement for set-env
+create-or-update-comment: REF=1a85b6614033a04e3a82c1d567d228facceb805c
 create-or-update-comment: clone(create-or-update-comment)
