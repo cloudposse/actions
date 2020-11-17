@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: "Add reaction 👍"
-        uses: cloudposse/actions/github/create-or-update-comment@0.15.0
+        uses: cloudposse/actions/github/create-or-update-comment@0.21.0
         with:
           repository: ${{ github.event.client_payload.github.payload.repository.full_name }}
           comment-id: ${{ github.event.client_payload.github.payload.comment.id }}
