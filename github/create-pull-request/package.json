@@ -32,7 +32,7 @@
     "@actions/core": "1.2.6",
     "@actions/exec": "1.0.4",
     "@octokit/core": "3.1.2",
-    "@octokit/plugin-paginate-rest": "2.4.0",
+    "@octokit/plugin-paginate-rest": "2.6.0",
     "@octokit/plugin-rest-endpoint-methods": "4.2.0",
     "uuid": "8.3.0"
   },
