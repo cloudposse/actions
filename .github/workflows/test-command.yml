@@ -18,7 +18,7 @@ jobs:
           repository: ${{ github.event.client_payload.github.payload.repository.full_name }}
           comment-id: ${{ github.event.client_payload.github.payload.comment.id }}
           token: ${{ secrets.PUBLIC_REPO_ACCESS_TOKEN }}
-          reaction-type: "+1"
+          reactions: "+1"
 
   ping:
     runs-on: ubuntu-latest
