@@ -304,7 +304,7 @@ jobs:
       run: make -C test/src clean init
     - name: "Inject secrets"
       env:
-        USES_GITHUB:   ${{ contains(github.event.client_payload.github.payload.repository.name, '-github-') }}
+        USES_GITHUB:   ${{ contains(github.event.client_payload.github.payload.repository.name, '-github-') || contains(github.event.client_payload.pull_request.labels.*.name, 'terraform-github-provider') }}
         USES_OPSGENIE: ${{ contains(github.event.client_payload.github.payload.repository.name, 'terraform-opsgenie-') }}
         USES_AWS:      ${{ contains(github.event.client_payload.github.payload.repository.name, 'terraform-aws-') }}
         USES_SPOTINST: ${{ contains(github.event.client_payload.github.payload.repository.name, '-spotinst-') }}
