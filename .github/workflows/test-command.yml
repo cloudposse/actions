@@ -170,10 +170,11 @@ jobs:
           echo "Terraform ${VERSION} is required for ${BASE_REF}..."
         fi
 
-        if [ -x "/usr/local/terraform/${VERSION}/bin/terraform" ]; then
-          printf "PATH=/usr/local/terraform/%s/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin\n" ${VERSION} >> "$GITHUB_ENV"
+        PATH_TO_TERRAFORM="/usr/local/terraform/${VERSION}/bin"
+        if [ -x "${PATH_TO_TERRAFORM}/terraform" ]; then
+          echo "${PATH_TO_TERRAFORM}" >> "$GITHUB_PATH"
         else
-          echo "Unable to locate executable for terraform ${VERSION}"
+          echo "Unable to locate executable for terraform ${VERSION}" >&2
           exit 1
         fi
       env:
@@ -286,10 +287,11 @@ jobs:
           echo "Terraform ${VERSION} is required for ${BASE_REF}..."
         fi
 
-        if [ -x "/usr/local/terraform/${VERSION}/bin/terraform" ]; then
-          printf "PATH=/usr/local/terraform/%s/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin\n" ${VERSION} >> "$GITHUB_ENV"
+        PATH_TO_TERRAFORM="/usr/local/terraform/${VERSION}/bin"
+        if [ -x "${PATH_TO_TERRAFORM}/terraform" ]; then
+          echo "${PATH_TO_TERRAFORM}" >> "$GITHUB_PATH"
         else
-          echo "Unable to locate executable for terraform ${VERSION}"
+          echo "Unable to locate executable for terraform ${VERSION}" >&2
           exit 1
         fi
       env:
@@ -300,52 +302,51 @@ jobs:
     # Initialize the terratest go project
     - name: "Initialize terratest Go project"
       run: make -C test/src clean init
-
-    # Run the terratest integration tests without credentials
-    - name: "Test `examples/complete` with terratest locally, without credentials"
-      if: ${{ contains(github.event.client_payload.github.payload.repository.name, 'terraform-null-') }}
-      run: make -C test/src
-
-    # Run the terratest integration tests with only AWS credentials
-    - name: "Test `examples/complete` with terratest on AWS"
-      if: ${{ contains(github.event.client_payload.github.payload.repository.name, 'terraform-aws-') && !( contains(github.event.client_payload.github.payload.repository.name, '-github-') || contains(github.event.client_payload.github.payload.repository.name, '-datadog-') || contains(github.event.client_payload.pull_request.labels.*.name, 'terraform-github-provider') || contains(github.event.client_payload.pull_request.labels.*.name, 'terraform-datadog-provider') ) }}
-      run: make -C test/src
+    - name: "Inject secrets"
       env:
+        USES_GITHUB:   >-
+          ${{ contains(github.event.client_payload.github.payload.repository.name, '-github-')
+          || contains(github.event.client_payload.pull_request.labels.*.name, 'terraform-github-provider') }}
+        USES_OPSGENIE: >-
+          ${{ contains(github.event.client_payload.github.payload.repository.name, 'terraform-opsgenie-') }}
+          || contains(github.event.client_payload.pull_request.labels.*.name, 'terraform-opsgenie-provider') }}
+        USES_AWS: >-
+          ${{ contains(github.event.client_payload.github.payload.repository.name, 'terraform-aws-') }}
+          || contains(github.event.client_payload.pull_request.labels.*.name, 'terraform-aws-provider') }}
+        USES_SPOTINST: >-
+          ${{ contains(github.event.client_payload.github.payload.repository.name, '-spotinst-') }}
+          || contains(github.event.client_payload.pull_request.labels.*.name, 'terraform-spotinst-provider') }}
+        USES_DATADOG: >-
+          ${{ contains(github.event.client_payload.github.payload.repository.name, '-datadog-')
+          ||  contains(github.event.client_payload.pull_request.labels.*.name, 'terraform-datadog-provider') }}
+
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
+        AWS_SECRET_KEY:    ${{ secrets.AWS_SECRET_KEY }}
+        GITHUB_TOKEN:      ${{ secrets.PUBLIC_REPO_ACCESS_TOKEN }}
+        OPSGENIE_API_KEY:  ${{ secrets.OPSGENIE_API_KEY }}
+        DD_API_KEY:        ${{ secrets.DD_API_KEY }}
+        DD_APP_KEY:        ${{ secrets.DD_APP_KEY }}
+        SPOTINST_TOKEN:    ${{ secrets.SPOTINST_TOKEN }}
+        SPOTINST_ACCOUNT:  ${{ secrets.SPOTINST_ACCOUNT }}
+      shell: bash
+      run: |
+        [[ "$USES_GITHUB == "true" ]]   && printf "%s=%s\n"  GITHUB_TOKEN     "$GITHUB_TOKEN"     >> "$GITHUB_ENV"
+        [[ "$USES_OPSGENIE == "true" ]] && printf "%s=%s\n"  OPSGENIE_API_KEY "$OPSGENIE_API_KEY" >> "$GITHUB_ENV"
+        if [[ "$USES_AWS" == "true" || "$USES_DATADOG" == "true" || "$USES_SPOTINST" == "true" ]]; then
+          printf "%s=%s\n"  AWS_ACCESS_KEY_ID "$AWS_ACCESS_KEY_ID" >> "$GITHUB_ENV"
+          printf "%s=%s\n"  AWS_SECRET_KEY    "$AWS_SECRET_KEY"    >> "$GITHUB_ENV"
+        fi
+        if [[ "$USES_SPOTINST" == "true" ]]; then
+          printf "%s=%s\n"  SPOTINST_TOKEN   "$SPOTINST_TOKEN"   >> "$GITHUB_ENV"
+          printf "%s=%s\n"  SPOTINST_ACCOUNT "$SPOTINST_ACCOUNT" >> "$GITHUB_ENV"
+        fi
+        if [[ "$USES_DATADOG" == "true" ]]; then
+          printf "%s=%s\n"  DD_API_KEY "$DD_API_KEY" >> "$GITHUB_ENV"
+          printf "%s=%s\n"  DD_APP_KEY "$DD_APP_KEY" >> "$GITHUB_ENV"
+        fi
 
-    # Run the terratest integration tests with only GitHub credentials
-    - name: "Test `examples/complete` with terratest on GitHub"
-      if: ${{ contains(github.event.client_payload.github.payload.repository.name, 'terraform-github-') }}
+    - name: "Test `examples/complete` with terratest"
       run: make -C test/src
-      env:
-        GITHUB_TOKEN: ${{ secrets.PUBLIC_REPO_ACCESS_TOKEN }}
-
-    # Run the terratest integration tests with only Opsgenie credentials
-    - name: "Test `examples/complete` with terratest on Opsgenie"
-      if: ${{ contains(github.event.client_payload.github.payload.repository.name, 'terraform-opsgenie-') }}
-      run: make -C test/src
-      env:
-        OPSGENIE_API_KEY: ${{ secrets.OPSGENIE_API_KEY }}
-
-    # Run the terratest integration tests with both AWS and GitHub credentials
-    - name: "Test `examples/complete` with terratest on AWS & GitHub"
-      if: ${{ contains(github.event.client_payload.github.payload.repository.name, 'terraform-aws-') && ( contains(github.event.client_payload.github.payload.repository.name, '-github-') || contains(github.event.client_payload.pull_request.labels.*.name, 'terraform-github-provider') ) }}
-      run: make -C test/src
-      env:
-        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
-        GITHUB_TOKEN: ${{ secrets.PUBLIC_REPO_ACCESS_TOKEN }}
-
-      # Run the terratest integration tests with both AWS and Datadog credentials
-    - name: "Test `examples/complete` with terratest on AWS & Datadog"
-      if: ${{ contains(github.event.client_payload.github.payload.repository.name, '-datadog-') || contains(github.event.client_payload.pull_request.labels.*.name, 'terraform-datadog-provider') }}
-      run: make -C test/src
-      env:
-        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
-        DD_API_KEY: ${{ secrets.DD_API_KEY }}
-        DD_APP_KEY: ${{ secrets.DD_APP_KEY }}
 
     # Update GitHub status for dispatch events
     - name: "Update GitHub Status for failure"
