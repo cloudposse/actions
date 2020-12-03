@@ -304,10 +304,18 @@ jobs:
       run: make -C test/src clean init
     - name: "Inject secrets"
       env:
-        USES_GITHUB:   ${{ contains(github.event.client_payload.github.payload.repository.name, '-github-') || contains(github.event.client_payload.pull_request.labels.*.name, 'terraform-github-provider') }}
-        USES_OPSGENIE: ${{ contains(github.event.client_payload.github.payload.repository.name, 'terraform-opsgenie-') }}
-        USES_AWS:      ${{ contains(github.event.client_payload.github.payload.repository.name, 'terraform-aws-') }}
-        USES_SPOTINST: ${{ contains(github.event.client_payload.github.payload.repository.name, '-spotinst-') }}
+        USES_GITHUB:   >-
+          ${{ contains(github.event.client_payload.github.payload.repository.name, '-github-')
+          || contains(github.event.client_payload.pull_request.labels.*.name, 'terraform-github-provider') }}
+        USES_OPSGENIE: >-
+          ${{ contains(github.event.client_payload.github.payload.repository.name, 'terraform-opsgenie-') }}
+          || contains(github.event.client_payload.pull_request.labels.*.name, 'terraform-opsgenie-provider') }}
+        USES_AWS: >-
+          ${{ contains(github.event.client_payload.github.payload.repository.name, 'terraform-aws-') }}
+          || contains(github.event.client_payload.pull_request.labels.*.name, 'terraform-aws-provider') }}
+        USES_SPOTINST: >-
+          ${{ contains(github.event.client_payload.github.payload.repository.name, '-spotinst-') }}
+          || contains(github.event.client_payload.pull_request.labels.*.name, 'terraform-spotinst-provider') }}
         USES_DATADOG: >-
           ${{ contains(github.event.client_payload.github.payload.repository.name, '-datadog-')
           ||  contains(github.event.client_payload.pull_request.labels.*.name, 'terraform-datadog-provider') }}
