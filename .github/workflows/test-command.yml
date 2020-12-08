@@ -157,7 +157,12 @@ jobs:
       run: |
         VERSION=$(cut -d/ -f1 <<<${BASE_REF})
         if [[ ${VERSION} == 'master' ]]; then
-          VERSION=0.12
+          TF12=0.12.29
+          TF13=$(terraform-0.13 version --json | jq -r .terraform_version)
+          TF14=$(terraform-0.14 version --json | jq -r .terraform_version)
+          VERSION=$(vert -s "$(terraform-config-inspect --json . | jq -r '.required_core[]')" "$TF12" "$TF13" "$TF14" | head -1)
+          echo Full version to use is ${VERSION}, setting to ${VERSION:0:4}
+          VERSION=${VERSION:0:4}
         fi
 
         # Match lables like `terraform/0.12` or nothing (to prevent non-zero exit code)
@@ -274,7 +279,12 @@ jobs:
       run: |
         VERSION=$(cut -d/ -f1 <<<${BASE_REF})
         if [[ ${VERSION} == 'master' ]]; then
-          VERSION=0.12
+          TF12=0.12.29
+          TF13=$(terraform-0.13 version --json | jq -r .terraform_version)
+          TF14=$(terraform-0.14 version --json | jq -r .terraform_version)
+          VERSION=$(vert -s "$(terraform-config-inspect --json . | jq -r '.required_core[]')" "$TF12" "$TF13" "$TF14" | head -1)
+          echo Full version to use is ${VERSION}, setting to ${VERSION:0:4}
+          VERSION=${VERSION:0:4}
         fi
 
         # Match lables like `terraform/0.12` or nothing (to prevent non-zero exit code)
