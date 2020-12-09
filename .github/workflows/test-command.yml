@@ -154,6 +154,7 @@ jobs:
 
     # Determine requied version of terraform based on the target branch of the pull request. Then update the PATH to use it.
     - name: "Determine required terraform version"
+      shell: bash -x -e -o pipefail {0}
       run: |
         VERSION=$(cut -d/ -f1 <<<${BASE_REF})
         if [[ ${VERSION} == 'master' ]]; then
@@ -276,6 +277,7 @@ jobs:
 
     # Determine requied version of terraform based on the target branch of the pull request. Then update the PATH to use it.
     - name: "Determine required terraform version"
+      shell: bash -x -e -o pipefail {0}
       run: |
         VERSION=$(cut -d/ -f1 <<<${BASE_REF})
         if [[ ${VERSION} == 'master' ]]; then
