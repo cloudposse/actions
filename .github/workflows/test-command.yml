@@ -161,7 +161,8 @@ jobs:
           TF12=0.12.29
           TF13=$(terraform-0.13 version --json | jq -r .terraform_version)
           TF14=$(terraform-0.14 version --json | jq -r .terraform_version)
-          VERSION=$(vert -s "$(terraform-config-inspect --json . | jq -r '.required_core[]')" "$TF12" "$TF13" "$TF14" | head -1)
+          # vert exits non-zero if any of the versions are not acceptable, so `|| [[ -n "$VERSION" ]]` for a real error check
+          VERSION=$(vert -s "$(terraform-config-inspect --json . | jq -r '.required_core[]')" "$TF12" "$TF13" "$TF14" | head -1) || [[ -n "$VERSION" ]]
           echo Full version to use is ${VERSION}, setting to ${VERSION:0:4}
           VERSION=${VERSION:0:4}
         fi
@@ -284,7 +285,8 @@ jobs:
           TF12=0.12.29
           TF13=$(terraform-0.13 version --json | jq -r .terraform_version)
           TF14=$(terraform-0.14 version --json | jq -r .terraform_version)
-          VERSION=$(vert -s "$(terraform-config-inspect --json . | jq -r '.required_core[]')" "$TF12" "$TF13" "$TF14" | head -1)
+          # vert exits non-zero if any of the versions are not acceptable, so `|| [[ -n "$VERSION" ]]` for a real error check
+          VERSION=$(vert -s "$(terraform-config-inspect --json . | jq -r '.required_core[]')" "$TF12" "$TF13" "$TF14" | head -1) || [[ -n "$VERSION" ]]
           echo Full version to use is ${VERSION}, setting to ${VERSION:0:4}
           VERSION=${VERSION:0:4}
         fi
