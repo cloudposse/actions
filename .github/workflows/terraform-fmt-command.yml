@@ -18,7 +18,7 @@ jobs:
       # Format Terraform files
       - name: Format Terraform files
         shell: bash
-        run: make PACKAGES_PREFER_HOST=true terraform/fmt
+        run: make PACKAGES_PREFER_HOST=true terraform/fmt/host
 
       # Commit changes (if any) to the PR branch
       - name: Commit changes to the PR branch
