@@ -11,6 +11,12 @@ defaults:
 jobs:
   parse:
     runs-on: ubuntu-latest
+    outputs:
+      ack-reaction: ${{ steps.parse.outputs.reaction }}
+      run-ping: ${{ steps.parse.outputs.ping }}
+      run-bats: ${{ steps.parse.outputs.bats }}
+      run-readme: ${{ steps.parse.outputs.readme }}
+      run-terratest: ${{ steps.parse.outputs.terratest }}
     steps:
     - name: Parse Args
       id: parse
@@ -49,6 +55,7 @@ jobs:
 
   ack:
     runs-on: ubuntu-latest
+    needs: parse
     if: github.event.client_payload.github.payload.comment.id != ''
     steps:
       - name: "Add reaction 👍👎️"
@@ -57,11 +64,12 @@ jobs:
           repository: ${{ github.event.client_payload.github.payload.repository.full_name }}
           comment-id: ${{ github.event.client_payload.github.payload.comment.id }}
           token: ${{ secrets.PUBLIC_REPO_ACCESS_TOKEN }}
-          reactions: ${{ steps.parse.outputs.ack }}
+          reactions: ${{ needs.parse.outputs.ack-reaction }}
 
   ping:
     runs-on: ubuntu-latest
-    if: steps.parse.outputs.ping == 'true'
+    needs: parse
+    if: needs.parse.outputs.run-ping == 'true'
     steps:
     # Update GitHub status for dispatch events
     - name: "Update GitHub Status for this ref"
@@ -80,7 +88,8 @@ jobs:
 
   readme:
     runs-on: ubuntu-latest
-    if: steps.parse.outputs.readme == 'true'
+    needs: parse
+    if: needs.parse.outputs.run-readme == 'true'
     container: cloudposse/testing.cloudposse.co:latest
     env:
       MAKE_INCLUDES: Makefile
@@ -164,7 +173,8 @@ jobs:
 
   bats:
     runs-on: ubuntu-latest
-    if: steps.parse.outputs.bats == 'true'
+    needs: parse
+    if: needs.parse.outputs.run-bats == 'true'
     container: cloudposse/testing.cloudposse.co:latest
     env:
       MAKE_INCLUDES: Makefile
@@ -289,7 +299,8 @@ jobs:
 
   terratest:
     runs-on: ubuntu-latest
-    if: steps.parse.outputs.ping == 'true'
+    needs: parse
+    if: needs.parse.outputs.run-terratest == 'true'
     container: cloudposse/testing.cloudposse.co:latest
     env:
       MAKE_INCLUDES: Makefile
