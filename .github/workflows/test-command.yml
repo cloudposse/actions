@@ -9,20 +9,67 @@ defaults:
     shell: bash -e -o pipefail {0}
 
 jobs:
+  parse:
+    runs-on: ubuntu-latest
+    outputs:
+      ack-reaction: ${{ steps.parse.outputs.reaction }}
+      run-ping: ${{ steps.parse.outputs.ping }}
+      run-bats: ${{ steps.parse.outputs.bats }}
+      run-readme: ${{ steps.parse.outputs.readme }}
+      run-terratest: ${{ steps.parse.outputs.terratest }}
+    steps:
+    - name: Parse Args
+      id: parse
+      env:
+        DEBUG: toJSON(github.event.client_payload.slash_command)
+        ARGS_V1: ${{ github.event.client_payload.slash_command.unnamed_args }}
+        ARGS_V2: ${{ github.event.client_payload.slash_command.args.unnamed.all }}
+      shell: bash
+      run: |
+        REACTION="-1"
+        ARGS="${ARGS_V1}${ARGS_V2}"
+        printf "Args are %s\n" "$ARGS"
+        printf "\n\nslash_command is %s\n\n" "$DEBUG"
+
+        # ack is not a command. We send ack if this was launched from a comment.
+        COMMANDS=(PING BATS README TERRATEST)
+        if printf "%s" "${ARGS^^}" | grep -qE '\bALL\b'; then
+          REACTION="+1"
+          # "all" explicitly does not include "ping"
+          for cmd in "${COMMANDS[@]}"; do
+            [[ $cmd == "PING" ]] && continue
+            printf -v "$cmd" "true"
+          done
+        else
+          for cmd in "${COMMANDS[@]}"; do
+            if printf "%s" "${ARGS^^}" | grep -qE "\b${cmd}\b"; then
+              REACTION="+1"
+              printf -v "$cmd" "true"
+            fi
+          done
+        fi
+        for out in REACTION "${COMMANDS[@]}"; do
+          printf "::set-output name=%s::%s\n" "${out,,}" "${!out:-false}"
+          printf "%s=%s\n" "${out,,}" "${!out:-false}"
+        done
+
   ack:
     runs-on: ubuntu-latest
+    needs: parse
+    if: github.event.client_payload.github.payload.comment.id != ''
     steps:
-      - name: "Add reaction 👍"
+      - name: "Add reaction 👍👎️"
         uses: cloudposse/actions/github/create-or-update-comment@0.22.0
         with:
           repository: ${{ github.event.client_payload.github.payload.repository.full_name }}
           comment-id: ${{ github.event.client_payload.github.payload.comment.id }}
           token: ${{ secrets.PUBLIC_REPO_ACCESS_TOKEN }}
-          reactions: "+1"
+          reactions: ${{ needs.parse.outputs.ack-reaction }}
 
   ping:
     runs-on: ubuntu-latest
-    if: ${{ github.event.client_payload.slash_command.args.unnamed.arg1 == 'ping' || github.event.client_payload.slash_command.arg1 == 'ping' }}
+    needs: parse
+    if: needs.parse.outputs.run-ping == 'true'
     steps:
     # Update GitHub status for dispatch events
     - name: "Update GitHub Status for this ref"
@@ -41,7 +88,8 @@ jobs:
 
   readme:
     runs-on: ubuntu-latest
-    if: ${{ github.event.client_payload.slash_command.args.unnamed.arg1 == 'readme' || github.event.client_payload.slash_command.arg1 == 'readme' || github.event.client_payload.slash_command.args.unnamed.arg1 == 'all' || github.event.client_payload.slash_command.arg1 == 'all' }}
+    needs: parse
+    if: needs.parse.outputs.run-readme == 'true'
     container: cloudposse/testing.cloudposse.co:latest
     env:
       MAKE_INCLUDES: Makefile
@@ -125,10 +173,12 @@ jobs:
 
   bats:
     runs-on: ubuntu-latest
-    if: ${{ github.event.client_payload.slash_command.args.unnamed.arg1 == 'bats' || github.event.client_payload.slash_command.arg1 == 'bats' || github.event.client_payload.slash_command.args.unnamed.arg1 == 'all' || github.event.client_payload.slash_command.arg1 == 'all' }}
+    needs: parse
+    if: needs.parse.outputs.run-bats == 'true'
     container: cloudposse/testing.cloudposse.co:latest
     env:
       MAKE_INCLUDES: Makefile
+      TF_PLUGIN_CACHE_DIR: /tmp
     steps:
     # Update GitHub status for dispatch events
     - name: "Update GitHub Status for pending"
@@ -249,7 +299,8 @@ jobs:
 
   terratest:
     runs-on: ubuntu-latest
-    if: ${{ github.event.client_payload.slash_command.args.unnamed.arg1 == 'terratest' || github.event.client_payload.slash_command.arg1 == 'terratest' || github.event.client_payload.slash_command.args.unnamed.arg1 == 'all' || github.event.client_payload.slash_command.arg1 == 'all' }}
+    needs: parse
+    if: needs.parse.outputs.run-terratest == 'true'
     container: cloudposse/testing.cloudposse.co:latest
     env:
       MAKE_INCLUDES: Makefile

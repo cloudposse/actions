@@ -6,6 +6,7 @@ on:
 jobs:
   terraform-fmt:
     runs-on: ubuntu-latest
+    container: cloudposse/build-harness:slim-latest
     steps:
       # Checkout the pull request branch
       - uses: actions/checkout@v2
@@ -17,10 +18,7 @@ jobs:
       # Format Terraform files
       - name: Format Terraform files
         shell: bash
-        run: |
-          make init
-          make terraform/install TERRAFORM_VERSION=0.12.29
-          terraform fmt -recursive
+        run: make PACKAGES_PREFER_HOST=true terraform/fmt/host
 
       # Commit changes (if any) to the PR branch
       - name: Commit changes to the PR branch
