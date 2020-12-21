@@ -21,8 +21,8 @@ jobs:
     - name: Parse Args
       id: parse
       env:
-        DEBUG: toJSON(github.event.client_payload.slash_command)
-        ARGS_V1: ${{ github.event.client_payload.slash_command.unnamed_args }}
+        DEBUG: ${{ toJSON(github.event.client_payload.slash_command) }}
+        ARGS_V1: ${{ github.event.client_payload.slash_command.args }}
         ARGS_V2: ${{ github.event.client_payload.slash_command.args.unnamed.all }}
       shell: bash
       run: |
@@ -37,7 +37,7 @@ jobs:
           REACTION="+1"
           # "all" explicitly does not include "ping"
           for cmd in "${COMMANDS[@]}"; do
-            [[ $cmd == "PING" ]] && continue
+            [[ $cmd == "PING" ]] && ! { printf "%s" "${ARGS^^}" | grep -qE '\bPING\b'; } && continue
             printf -v "$cmd" "true"
           done
         else
