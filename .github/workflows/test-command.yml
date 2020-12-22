@@ -22,7 +22,7 @@ jobs:
       id: parse
       env:
         DEBUG: ${{ toJSON(github.event.client_payload.slash_command) }}
-        ARGS_V1: ${{ github.event.client_payload.slash_command.args }}
+        ARGS_V1: ${{ github.event.client_payload.slash_command.arg1 }}
         ARGS_V2: ${{ github.event.client_payload.slash_command.args.unnamed.all }}
       shell: bash
       run: |
