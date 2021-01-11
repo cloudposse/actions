@@ -409,11 +409,11 @@ jobs:
           printf "%s=%s\n"  DD_APP_KEY "$DD_APP_KEY" >> "$GITHUB_ENV"
           echo exported Datadog
         fi
-        if [[ "$USES_GITHUB == "true" ]]; then
+        if [[ "$USES_GITHUB" == "true" ]]; then
           printf "%s=%s\n"  GITHUB_TOKEN     "$GITHUB_TOKEN"     >> "$GITHUB_ENV"
           echo exported GitHub
         fi
-        if [[ "$USES_OPSGENIE == "true" ]]; then
+        if [[ "$USES_OPSGENIE" == "true" ]]; then
           printf "%s=%s\n"  OPSGENIE_API_KEY "$OPSGENIE_API_KEY" >> "$GITHUB_ENV"
           echo exported Opsgenie
         fi
