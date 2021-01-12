@@ -27,8 +27,7 @@ fi
 go get -u github.com/mitchellh/gox
 
 if [[ "$GO111MODULE" != "on" ]]; then
-  go get -u github.com/golang/dep/cmd/dep
-  dep ensure
+  go mod download
 fi
 
 gox -osarch="${GOX_OSARCH}" -output "${OUTPUT_PATH}{{.OS}}_{{.Arch}}"
