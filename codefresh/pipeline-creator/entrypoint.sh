@@ -2,7 +2,8 @@
 
 set -x
 
-git clone "${REPO}"
+git clone "https://github.com/${ORG}/${REPO}.git"
+cd "${REPO}" || exit 1
 git checkout "${VERSION}"
 
 codefresh auth create-context context --api-key "$CF_API_KEY"
