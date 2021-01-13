@@ -2,8 +2,8 @@ FROM codefresh/cli:0.74.4
 
 LABEL maintainer="Cloud Posse <hello@cloudposse.com>"
 
-LABEL "com.github.actions.name"="Run Codefresh pipeline"
-LABEL "com.github.actions.description"="GitHub action that runs Codefresh pipeline"
+LABEL "com.github.actions.name"="Create Codefresh pipelines"
+LABEL "com.github.actions.description"="GitHub action that creates Codefresh pipelines"
 LABEL "com.github.actions.icon"="activity"
 LABEL "com.github.actions.color"="green"
 

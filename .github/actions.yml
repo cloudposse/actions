@@ -1,3 +1,5 @@
+codefresh/pipeline-creator: codefresh/pipeline-creator/**
+codefresh/pipeline-runner: codefresh/pipeline-runner/**
 github/auto-approve: github/auto-approve/**
 github/auto-assign: github/auto-assign/**
 github/auto-merge: github/auto-merge/**
