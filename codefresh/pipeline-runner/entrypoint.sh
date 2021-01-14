@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -x
+set -e -o pipefail
 
 codefresh auth create-context context --api-key "$CF_API_KEY"
 codefresh auth use-contex context
