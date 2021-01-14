@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -x
+set -e -o pipefail
 
 export PROJECT="${INPUT_PROJECT}"
 export GITHUB_TOKEN="${INPUT_GITHUB_TOKEN}"
