@@ -1,5 +1,5 @@
 name: 'Create Codefresh pipelines'
-description: 'GitHub action that creates Codefresh pipelines'
+description: 'GitHub Action that creates Codefresh pipelines from templated spec files'
 author: 'Cloud Posse <hello@cloudposse.com>'
 runs:
   using: 'docker'
