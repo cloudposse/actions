@@ -18,7 +18,7 @@ jobs:
       # Format Terraform files
       - name: Format Terraform files
         shell: bash
-        run: make PACKAGES_PREFER_HOST=true terraform/fmt/host
+        run: /usr/bin/make BUILD_HARNESS_PATH=/build-harness PACKAGES_PREFER_HOST=true -f /build-harness/templates/Makefile.build-harness terraform/fmt
 
       # Commit changes (if any) to the PR branch
       - name: Commit changes to the PR branch
