@@ -7,8 +7,8 @@
 #   specified with the --file flag"
 # However, we won't find the helmfiles with custom names (specified using the --file flag in the
 # helmfile command).
-helmfiles=( $(find . -type f -name "helmfile.yaml") )
-for new_helmfile in $(find . -type f -name "charts.yaml"); do
+helmfiles=( $(find . -type f -name "helmfile.yaml" -a -not -path "*helmfile.d/*") )
+for new_helmfile in $(find . -type f -name "charts.yaml" -a -not -path "*helmfile.d/*"); do
     helmfiles+=("$new_helmfile")
 done
 for new_helmfile in $(find . -type f -path '*helmfile.d/*' \( -name '*.yaml' -o -name '*.yml' \) ); do
