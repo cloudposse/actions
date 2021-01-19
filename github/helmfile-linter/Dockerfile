@@ -14,6 +14,9 @@ RUN	apk add --no-cache \
 	jq \
 	git
 
+RUN curl https://github.com/roboll/helmfile/releases/download/v0.137.0/helmfile_linux_amd64 && \
+chmod 764 helmfile_linux_amd64
+
 COPY entrypoint.sh /
 
 RUN chmod 755 /entrypoint.sh
