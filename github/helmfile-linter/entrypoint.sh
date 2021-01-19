@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -x
+# set -x
 
 # Gather list of helmfiles in current project according to the error text of `helmfile lint`:
 #   "It must be named helmfile.d/*.{yaml,yml}, helmfile.yaml, or charts.yaml, or otherwise
