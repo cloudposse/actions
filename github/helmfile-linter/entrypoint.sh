@@ -18,9 +18,20 @@ done
 # lint each helmfile
 echo "Linting helmfiles."
 for unlinted_helmfile in "${helmfiles[@]}"; do
+    # Split up helmfile path in order to move to the containing directory
+    helmfile_dir=`dirname "$unlinted_helmfile"`
+
+    # save current directory
+    original_dir=$(pwd)
+
+    # move to new directory
+    cd $helmfile_dir
     echo "$unlinted_helmfile"
-    /helmfile_linux_amd64 lint $unlinted_helmfile
+    /helmfile_linux_amd64 lint
     echo "\n"
+
+    # move back to original directory
+    cd $original_dir
 done
 echo "Done linting helmfiles."
 echo "\n"
