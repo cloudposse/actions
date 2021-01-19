@@ -19,7 +19,7 @@ done
 echo "Linting helmfiles."
 for unlinted_helmfile in "${helmfiles[@]}"; do
     echo "$unlinted_helmfile"
-    /helmfile_linux_amd64 $unlinted_helmfile
+    /helmfile_linux_amd64 lint $unlinted_helmfile
     echo "\n"
 done
 echo "Done linting helmfiles."
