@@ -7,11 +7,16 @@
 #   specified with the --file flag"
 # However, we won't find the helmfiles with custom names (specified using the --file flag in the
 # helmfile command).
-helmfiles=( $(find . -type f -name "helmfile.yaml" -a -not -path "*helmfile.d/*") )
-for new_helmfile in $(find . -type f -name "charts.yaml" -a -not -path "*helmfile.d/*"); do
+helmfiles=( $(find . -type f -name "helmfile.yaml" \
+                     -a -not -path "*helmfile.d/*" \
+                     -a -not -path "*.github/*") )
+for new_helmfile in $(find . -type f -name "charts.yaml" \
+                             -a -not -path "*helmfile.d/*" \
+                             -a -not -path "*.github/*"); do
     helmfiles+=("$new_helmfile")
 done
-for new_helmfile in $(find . -type f -path '*helmfile.d/*' \( -name '*.yaml' -o -name '*.yml' \) ); do
+for new_helmfile in $(find . -type f -path '*helmfile.d/*' \
+                             -a \( -name '*.yaml' -o -name '*.yml' \) ); do
     helmfiles+=("$new_helmfile")
 done
 
