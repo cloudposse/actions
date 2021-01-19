@@ -11,11 +11,12 @@ helmfiles=( $(find . -type f -name "helmfile.yaml") )
 for new_helmfile in $(find . -type f -name "charts.yaml"); do
     helmfiles+=("$new_helmfile")
 done
-for new_helmfile in $(find . -type f -path '*helmfile.d/*' -name '*.yaml' -o -name '*.yml'); do
+for new_helmfile in $(find . -type f -path '*helmfile.d/*' \( -name '*.yaml' -o -name '*.yml' \) ); do
     helmfiles+=("$new_helmfile")
 done
 
 # lint each helmfile
+echo ""
 echo "Linting helmfiles."
 for unlinted_helmfile in "${helmfiles[@]}"; do
     # Split up helmfile path in order to move to the containing directory
@@ -26,12 +27,12 @@ for unlinted_helmfile in "${helmfiles[@]}"; do
 
     # move to new directory
     cd $helmfile_dir
-    echo "$unlinted_helmfile"
+    echo "Linting ${unlinted_helmfile}:"
     /helmfile_linux_amd64 lint
-    echo "\n"
+    echo ""
 
     # move back to original directory
     cd $original_dir
 done
 echo "Done linting helmfiles."
-echo "\n"
+echo ""
