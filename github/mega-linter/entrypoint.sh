@@ -3,11 +3,6 @@
 PYTHONPATH=$PYTHONPATH:$(pwd)
 export PYTHONPATH
 
-echo "DEBUG"
-echo "pwd: $(pwd)"
-echo "ls: $(ls -al)"
-echo "DEBUG"
-
 if [ "${UPGRADE_LINTERS_VERSION}" == "true" ]; then
   echo "UPGRADING LINTER VERSION"
   # Run only get_linter_version test methods

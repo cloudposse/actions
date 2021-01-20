@@ -52,8 +52,6 @@ LABEL maintainer="Nicolas Vuillamy <nicolas.vuillamy@gmail.com>" \
       org.opencontainers.image.vendor="Nicolas Vuillamy" \
       org.opencontainers.image.description="Lint your code base with GitHub Actions (DEV VERSION)"
 
-COPY .mega-linter.yml /github/workspace/
-
 COPY entrypoint.sh /
 
 RUN chmod 755 /entrypoint.sh
