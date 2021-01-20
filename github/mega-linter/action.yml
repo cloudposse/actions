@@ -1,0 +1,9 @@
+name: 'Mega-linter Helmfile'
+description: 'Check All Helmfiles for Errors'
+author: 'Cloud Posse <hello@cloudposse.com>'
+runs:
+  using: 'docker'
+  image: 'Dockerfile-quick'
+branding:
+  icon: 'activity'
+  color: 'blue'
