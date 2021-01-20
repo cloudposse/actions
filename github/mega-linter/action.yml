@@ -3,7 +3,7 @@ description: 'Check All Helmfiles for Errors'
 author: 'Cloud Posse <hello@cloudposse.com>'
 runs:
   using: 'docker'
-  image: 'Dockerfile-quick'
+  image: 'Dockerfile-actions'
 branding:
   icon: 'activity'
   color: 'blue'
