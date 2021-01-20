@@ -14,6 +14,7 @@ FROM $MEGALINTER_BASE_IMAGE
 # Installs python dependencies #
 ################################
 COPY megalinter /megalinter
+COPY .mega-linter.yml /
 RUN python /megalinter/setup.py install
 
 #######################################
