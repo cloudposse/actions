@@ -173,6 +173,8 @@ class GithubCommentReporter(Reporter):
             commit = repo.get_commit(sha=sha)
             print(commit.commit)
             print(commit.sha)
+            print(config.get_config())
+            print(os.system("printenv"))
             pr_list = commit.get_pulls()
             for pr in pr_list:
                 print(pr.title)
