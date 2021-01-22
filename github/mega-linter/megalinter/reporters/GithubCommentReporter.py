@@ -168,9 +168,15 @@ class GithubCommentReporter(Reporter):
                 else config.get("GITHUB_TOKEN")
             )
             g = github.Github(base_url=github_api_url, login_or_token=github_auth)
+            for repo in g.get_user().get_repos():
+                print(repo.name)
             repo = g.get_repo(github_repo)
+            print(repo.name)
             commit = repo.get_commit(sha=sha)
+            print(commit.commit)
             pr_list = commit.get_pulls()
+            for pr in pr_list:
+                print(pr.title)
             if pr_list.totalCount == 0:
                 logging.info(
                     "[GitHub Comment Reporter] No pull request was found, so no comment has been posted"
