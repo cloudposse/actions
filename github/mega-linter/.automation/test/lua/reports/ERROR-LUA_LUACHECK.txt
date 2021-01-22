@@ -1,0 +1,11 @@
+Results of luacheck linter (version 0.23.0)
+See documentation on https://nvuillam.github.io/mega-linter/descriptors/lua_luacheck/
+-----------------------------------------------
+
+[ERROR] .automation/test/lua/lua_bad_1.lua
+    Checking .automation/test/lua/lua_bad_1.lua 1 error
+    
+        .automation/test/lua/lua_bad_1.lua:10:1: expected 'end' (to close 'function' on line 7) near <eof>
+    
+    Total: 0 warnings / 1 error in 1 file
+
