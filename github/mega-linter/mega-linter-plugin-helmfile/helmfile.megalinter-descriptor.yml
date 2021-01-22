@@ -14,12 +14,12 @@ linters:
     linter_rules_url: https://www.schemastore.org/json/
     linter_megalinter_ref_url: "no"
     cli_lint_extra_args:
-      - "--ignore-errors"
+      - "--ignore-errors --schema https://raw.githubusercontent.com/cloudposse/actions/helmfile-mega-linter/github/mega-linter/mega-linter-plugin-helmfile/helmfile-schema.json"
     cli_help_arg_name: "--help"
     test_folder: yaml_schema
     examples:
-      - "v8r --ignore-errors myfile.yml"
-      - "v8r --ignore-errors myfile.yaml"
+      - "v8r --ignore-errors --schema https://raw.githubusercontent.com/cloudposse/actions/helmfile-mega-linter/github/mega-linter/mega-linter-plugin-helmfile/helmfile-schema.json myfile.yml"
+      - "v8r --ignore-errors --schema https://raw.githubusercontent.com/cloudposse/actions/helmfile-mega-linter/github/mega-linter/mega-linter-plugin-helmfile/helmfile-schema.json myfile.yaml"
     install:
       npm:
         - v8r
