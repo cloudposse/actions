@@ -6,6 +6,9 @@ descriptor_flavors:
 file_extensions:
   - ".yml"
   - ".yaml"
+file_names_regex:
+  - "charts.+"
+  - "helmfile.+"
 linters:
   # V8R
   - linter_name: v8r
