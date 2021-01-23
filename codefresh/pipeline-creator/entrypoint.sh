@@ -2,6 +2,8 @@
 
 set -e -o pipefail
 
+export PROJECT="${INPUT_PROJECT}"
+
 git clone "${INPUT_REPO_URL}"
 cd "${INPUT_REPO_NAME}"
 git checkout "${INPUT_VERSION}"
