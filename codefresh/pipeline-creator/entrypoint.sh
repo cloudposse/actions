@@ -2,9 +2,6 @@
 
 set -e -o pipefail
 
-export PROJECT="${INPUT_PROJECT}"
-export GITHUB_TOKEN="${INPUT_GITHUB_TOKEN}"
-
 git clone "${INPUT_REPO_URL}"
 cd "${INPUT_REPO_NAME}"
 git checkout "${INPUT_VERSION}"
