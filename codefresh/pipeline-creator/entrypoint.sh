@@ -13,9 +13,10 @@ codefresh auth create-context context --api-key "$INPUT_CF_API_KEY"
 codefresh auth use-contex context
 
 for spec in $(tr , ' ' <<<"${INPUT_CF_SPECS}"); do
-  input_file=./"${INPUT_CF_PIPELINE_CATALOG}"/"${spec}".yaml
+  input_pipeline_file=./"${INPUT_CF_PIPELINE_CATALOG}"/"${spec}".yaml
+  input_spec_file=./"${INPUT_CF_SPEC_CATALOG}"/"${spec}".yaml
   output_file=./"${INPUT_CF_SPEC_CATALOG}"/"${spec}"-rendered.yaml
-  gomplate -d pipeline=$input_file -f $input_file -o $output_file
+  gomplate -d pipeline="$input_pipeline_file" -f "$input_spec_file" -o "$output_file"
   codefresh get project "${INPUT_CF_PROJECT}" || codefresh create project "${INPUT_CF_PROJECT}"
-  codefresh replace pipeline -f $output_file || codefresh create pipeline -f $output_file
+  codefresh replace pipeline -f "$output_file" || codefresh create pipeline -f "$output_file"
 done
