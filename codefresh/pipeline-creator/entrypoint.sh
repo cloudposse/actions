@@ -2,7 +2,8 @@
 
 set -e -o pipefail
 
-export PROJECT="${INPUT_PROJECT}"
+export PROJECT="${INPUT_CF_PROJECT}"
+export REPO="${INPUT_REPO}"
 
 git clone "${INPUT_CF_REPO_URL}"
 cd "${INPUT_CF_REPO_NAME}"
