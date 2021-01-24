@@ -9,7 +9,7 @@ branding:
   color: 'green'
 inputs:
   repo:
-    description: 'The GitHub owner and repository name of the application repository.'
+    description: 'GitHub owner and repository name of the application repository.'
     required: true
   cf_project:
     description: 'Codefresh project name to host the pipelines.'
