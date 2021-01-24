@@ -30,7 +30,7 @@ inputs:
     description: 'Relative path to the pipelines catalog in the Codefresh repository.'
     required: true
   cf_specs:
-    description: 'A comma separated list of pipeline specs to create.'
+    description: 'A comma separated list of pipeline specs to create the pipelines from.'
     required: true
   cf_api_key:
     description: 'Codefresh API Key.'
