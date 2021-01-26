@@ -1,7 +1,5 @@
 # Codefresh Pipeline Creator GitHub Action
 
-**Name:** `cloudposse/actions/codefresh/pipeline-creator`
-
 Automatically creates Codefresh pipelines from pipeline specs.
 
 
