@@ -54,9 +54,10 @@ jobs:
     which are usually different for different types of applications (`microservice`, `SPA`, `severless`, etc.).
   
 
-  - Instead of copying the same Codefresh pipelines into every application (which would require maintaining them in many places), 
+  - Instead of copying the same Codefresh pipeline definitions into every application (which would require maintaining them in many places), 
+    and creating the pipelines manually in the Codefresh UI,
     define the pipeline steps and pipeline specs in your company's centralized catalog of Codefresh pipelines 
-    (e.g. in `https://github.com/my-company/codefresh` repo), and just copy one
+    (e.g. in `https://github.com/my-company/codefresh` repo), and just copy one 
     file with the GitHub Actions workflow described above into your application.
     
 
