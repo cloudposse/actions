@@ -1,8 +1,8 @@
 #!/bin/bash
 
-set -x
+set -e -o pipefail
 
-codefresh auth create-context context --api-key "$CF_API_KEY"
+codefresh auth create-context context
 codefresh auth use-contex context
 
 if [ -n "$TRIGGER_NAME" ]; then

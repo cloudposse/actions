@@ -1,4 +1,4 @@
-ACTIONS  = $(filter %/, $(sort $(wildcard github/*/ go/*/)))
+ACTIONS  = $(filter %/, $(sort $(wildcard github/*/ go/*/ codefresh/*/)))
 
 labeler:
 	for action in $(ACTIONS); do \

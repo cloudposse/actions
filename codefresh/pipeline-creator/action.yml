@@ -1,0 +1,37 @@
+name: 'Codefresh pipelines creator'
+description: 'GitHub Action that creates Codefresh pipelines from templated spec files'
+author: 'Cloud Posse <hello@cloudposse.com>'
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+branding:
+  icon: 'activity'
+  color: 'green'
+inputs:
+  repo:
+    description: 'GitHub owner and repository name of the application repository.'
+    required: true
+  cf_project:
+    description: 'Codefresh project name to host the pipelines.'
+    required: true
+  cf_repo_url:
+    description: 'URL of the repository that contains Codefresh pipelines and pipeline specs.'
+    required: true
+  cf_repo_name:
+    description: 'Name of the repository that contains Codefresh pipelines and pipeline specs.'
+    required: true
+  cf_repo_version:
+    description: 'Version of the repository that contains Codefresh pipelines and pipeline specs.'
+    required: true
+  cf_spec_catalog:
+    description: 'Relative path to the pipeline specs catalog in the Codefresh repository.'
+    required: true
+  cf_pipeline_catalog:
+    description: 'Relative path to the pipelines catalog in the Codefresh repository.'
+    required: true
+  cf_specs:
+    description: 'A comma separated list of pipeline specs to create the pipelines from.'
+    required: true
+  cf_api_key:
+    description: 'Codefresh API Key.'
+    required: true
