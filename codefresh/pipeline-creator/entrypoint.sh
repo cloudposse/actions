@@ -5,14 +5,23 @@ set -e -o pipefail
 export PROJECT="${INPUT_CF_PROJECT}"
 export REPO="${INPUT_REPO}"
 
+NETRC="$HOME/.netrc"
+
+printf "machine github.com" > $NETRC
+printf "login %s" "$GITHUB_USER" >> $NETRC
+printf "password %s" "$GITHUB_TOKEN" >> $NETRC
+
+echo "Cloning repo from ${INPUT_CF_REPO_URL}"
 git clone "${INPUT_CF_REPO_URL}"
 cd "${INPUT_CF_REPO_NAME}"
+
+echo "Checking out ${INPUT_CF_VERSION}"
 git checkout "${INPUT_CF_VERSION}"
 
-codefresh auth create-context context --api-key "$INPUT_CF_API_KEY"
-codefresh auth use-contex context
+codefresh auth create-context
 
 for spec in $(tr , ' ' <<<"${INPUT_CF_SPECS}"); do
+  echo "Updating ${spec} spec"
   input_pipeline_file=./"${INPUT_CF_PIPELINE_CATALOG}"/"${spec}".yaml
   input_spec_file=./"${INPUT_CF_SPEC_CATALOG}"/"${spec}".yaml
   output_file=./"${INPUT_CF_SPEC_CATALOG}"/"${spec}"-rendered.yaml
