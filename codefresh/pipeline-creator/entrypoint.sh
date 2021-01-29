@@ -15,7 +15,7 @@ echo "Cloning repo ${INPUT_CF_REPO_URL} version ${INPUT_CF_REPO_VERSION}"
 git clone -c advice.detachedHead=false --depth=1 -b "${INPUT_CF_REPO_VERSION}" "${INPUT_CF_REPO_URL}" codefresh
 cd ./codefresh
 
-codefresh auth create-context
+codefresh auth create-context --api-key "${CF_API_KEY}"
 
 for spec in $(tr , ' ' <<<"${INPUT_CF_SPECS}"); do
   echo "Updating ${spec} spec"
