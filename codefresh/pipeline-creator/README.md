@@ -24,26 +24,25 @@ jobs:
   pipeline-creator:
     runs-on: ubuntu-latest
     steps:
-      - uses: cloudposse/actions/codefresh/pipeline-creator@master
+      - uses: cloudposse/actions/codefresh/pipeline-creator@0.25.0
         with:
           # GitHub owner and repository name of the application repository
           repo: "${{ github.repository }}"
-          # Codefresh project name to host the pipelines (corresponds to GitHub repository name)
-          cf_project: "${{  github.event.repository.name  }}"
+          # Codefresh project name to host the pipelines
+          cf_project: "${{ github.event.repository.name }}"
           # URL of the repository that contains Codefresh pipelines and pipeline specs
-          cf_repo_url: 'https://github.com/my-company/codefresh.git'
-          # Name of the repository that contains Codefresh pipelines and pipeline specs
-          cf_repo_name: "codefresh"
+          cf_repo_url: "https://github.com/AltaisCorp/codefresh.git"
           # Version of the repository that contains Codefresh pipelines and pipeline specs
-          cf_repo_version: "main"
-          # Relative path to the pipeline specs catalog in the Codefresh repository
-          cf_spec_catalog: "specs/microservice"
-          # Relative path to the pipelines catalog in the Codefresh repository
-          cf_pipeline_catalog: "pipelines/microservice"
+          cf_repo_version: "0.1.0"
+          # Pipeline spec type (microservice, spa, serverless)
+          cf_spec_type: "microservice"
           # A comma separated list of pipeline specs to create the pipelines from
           cf_specs: "preview,build,deploy,release,destroy"
-          # Codefresh API Key from global organization secret
-          cf_api_key: "${{ secrets.CF_API_KEY }}"
+        env:
+          GITHUB_USER: "xxxxxxxxx-bot"
+          # Global organization secrets
+          GITHUB_TOKEN: "${{ secrets.CF_GITHUB_PAT }}"
+          CF_API_KEY: "${{ secrets.CF_API_KEY }}"
 ```
 
 
