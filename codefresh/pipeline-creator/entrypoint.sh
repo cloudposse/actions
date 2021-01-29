@@ -11,12 +11,9 @@ printf "machine github.com\n" > "$NETRC"
 printf "login %s\n" "$GITHUB_USER" >> "$NETRC"
 printf "password %s\n" "$GITHUB_TOKEN" >> "$NETRC"
 
-echo "Cloning repo from ${INPUT_CF_REPO_URL}"
-git clone "${INPUT_CF_REPO_URL}" codefresh
+echo "Cloning repo ${INPUT_CF_REPO_URL} version ${INPUT_CF_REPO_VERSION}"
+git clone -c advice.detachedHead=false --depth=1 -b "${INPUT_CF_REPO_VERSION}" "${INPUT_CF_REPO_URL}" codefresh
 cd ./codefresh
-
-echo "Checking out ${INPUT_CF_REPO_VERSION}"
-git checkout "${INPUT_CF_REPO_VERSION}"
 
 codefresh auth create-context
 
