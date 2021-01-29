@@ -12,11 +12,11 @@ printf "login %s\n" "$GITHUB_USER" >> "$NETRC"
 printf "password %s\n" "$GITHUB_TOKEN" >> "$NETRC"
 
 echo "Cloning repo from ${INPUT_CF_REPO_URL}"
-git clone "${INPUT_CF_REPO_URL}"
-cd "${INPUT_CF_REPO_NAME}"
+git clone "${INPUT_CF_REPO_URL}" codefresh
+cd ./codefresh
 
-echo "Checking out ${INPUT_CF_VERSION}"
-git checkout "${INPUT_CF_VERSION}"
+echo "Checking out ${INPUT_CF_REPO_VERSION}"
+git checkout "${INPUT_CF_REPO_VERSION}"
 
 codefresh auth create-context
 
