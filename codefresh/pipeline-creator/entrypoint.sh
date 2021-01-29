@@ -7,9 +7,9 @@ export REPO="${INPUT_REPO}"
 
 NETRC="$HOME/.netrc"
 
-printf "machine github.com" > $NETRC
-printf "login %s" "$GITHUB_USER" >> $NETRC
-printf "password %s" "$GITHUB_TOKEN" >> $NETRC
+printf "machine github.com\n" > "$NETRC"
+printf "login %s\n" "$GITHUB_USER" >> "$NETRC"
+printf "password %s\n" "$GITHUB_TOKEN" >> "$NETRC"
 
 echo "Cloning repo from ${INPUT_CF_REPO_URL}"
 git clone "${INPUT_CF_REPO_URL}"
