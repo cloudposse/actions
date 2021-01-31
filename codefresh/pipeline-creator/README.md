@@ -41,7 +41,7 @@ jobs:
         env:
           GITHUB_USER: "xxxxxxxxx-bot"
           # Global organization secrets
-          GITHUB_TOKEN: "${{ secrets.CODEFRESH_GITHUB_TOKEN }}"
+          GITHUB_TOKEN: "${{ secrets.CF_GITHUB_TOKEN }}"
           CF_API_KEY: "${{ secrets.CF_API_KEY }}"
 ```
 
