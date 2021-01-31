@@ -31,7 +31,7 @@ jobs:
           # Codefresh project name to host the pipelines
           cf_project: "${{ github.event.repository.name }}"
           # URL of the repository that contains Codefresh pipelines and pipeline specs
-          cf_repo_url: "https://github.com/AltaisCorp/codefresh.git"
+          cf_repo_url: "https://github.com/cloudposse/codefresh.git"
           # Version of the repository that contains Codefresh pipelines and pipeline specs
           cf_repo_version: "0.1.0"
           # Pipeline spec type (microservice, spa, serverless)
@@ -41,7 +41,7 @@ jobs:
         env:
           GITHUB_USER: "xxxxxxxxx-bot"
           # Global organization secrets
-          GITHUB_TOKEN: "${{ secrets.CF_GITHUB_PAT }}"
+          GITHUB_TOKEN: "${{ secrets.CODEFRESH_GITHUB_TOKEN }}"
           CF_API_KEY: "${{ secrets.CF_API_KEY }}"
 ```
 
