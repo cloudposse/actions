@@ -30,4 +30,8 @@ if [[ "$GO111MODULE" != "on" ]]; then
   go mod download
 fi
 
-gox -osarch="${GOX_OSARCH}" -output "${OUTPUT_PATH}{{.OS}}_{{.Arch}}"
+if [[ -z "$LDFLAGS" ]]; then 
+  gox -osarch="${GOX_OSARCH}" -output "${OUTPUT_PATH}{{.OS}}_{{.Arch}}"
+else
+  gox -osarch="${GOX_OSARCH}" -output "${OUTPUT_PATH}{{.OS}}_{{.Arch}}" -ldflags="${LDFLAGS}"
+fi
