@@ -59,7 +59,7 @@ jobs:
     if: github.event.client_payload.github.payload.comment.id != ''
     steps:
       - name: "Add reaction 👍👎️"
-        uses: cloudposse/actions/github/create-or-update-comment@0.22.0
+        uses: cloudposse/actions/github/create-or-update-comment@0.28.0
         with:
           repository: ${{ github.event.client_payload.github.payload.repository.full_name }}
           comment-id: ${{ github.event.client_payload.github.payload.comment.id }}
@@ -206,9 +206,10 @@ jobs:
     - name: "Determine required terraform version"
       shell: bash -x -e -o pipefail {0}
       run: |
+        # Some legacy support is on 0.11 branches and we determine the Terraform version based on the target branch name
         VERSION=$(cut -d/ -f1 <<<${BASE_REF})
-        if [[ ${VERSION} == 'master' ]]; then
-          TF12=0.12.29
+        if [[ ${VERSION} != '0.11' ]]; then
+          TF12=0.12.30
           TF13=$(terraform-0.13 version --json | jq -r .terraform_version)
           TF14=$(terraform-0.14 version --json | jq -r .terraform_version)
           # vert exits non-zero if any of the versions are not acceptable, so `|| [[ -n "$VERSION" ]]` for a real error check
@@ -331,9 +332,10 @@ jobs:
     - name: "Determine required terraform version"
       shell: bash -x -e -o pipefail {0}
       run: |
+        # Some legacy support is on 0.11 branches and we determine the Terraform version based on the target branch name
         VERSION=$(cut -d/ -f1 <<<${BASE_REF})
-        if [[ ${VERSION} == 'master' ]]; then
-          TF12=0.12.29
+        if [[ ${VERSION} != '0.11' ]]; then
+          TF12=0.12.30
           TF13=$(terraform-0.13 version --json | jq -r .terraform_version)
           TF14=$(terraform-0.14 version --json | jq -r .terraform_version)
           # vert exits non-zero if any of the versions are not acceptable, so `|| [[ -n "$VERSION" ]]` for a real error check
