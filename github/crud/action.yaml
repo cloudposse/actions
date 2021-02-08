@@ -1,0 +1,19 @@
+name: 'crud'
+description: 'Synchronize Github workflows to a repository'
+author: 'Cloud Posse <hello@cloudposse.com>'
+inputs:
+  repo:
+    required: true
+  catalog:
+    required: true
+  version:
+    required: false
+    default: master
+  workflows:
+    required: true
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+branding:
+  icon: 'activity'
+  color: 'blue'
