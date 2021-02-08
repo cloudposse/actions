@@ -8,7 +8,7 @@ jobs:
     name: Auto delete branch on merge
     runs-on: ubuntu-latest
     steps:
-    - uses: cloudposse/actions/github/branch-cleanup@0.28.0
+    - uses: cloudposse/actions/github/branch-cleanup@0.28.1
       env:
         GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
         NO_BRANCH_DELETED_EXIT_CODE: 0

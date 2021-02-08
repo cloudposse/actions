@@ -59,7 +59,7 @@ jobs:
     if: github.event.client_payload.github.payload.comment.id != ''
     steps:
       - name: "Add reaction 👍👎️"
-        uses: cloudposse/actions/github/create-or-update-comment@0.28.0
+        uses: cloudposse/actions/github/create-or-update-comment@0.28.1
         with:
           repository: ${{ github.event.client_payload.github.payload.repository.full_name }}
           comment-id: ${{ github.event.client_payload.github.payload.comment.id }}

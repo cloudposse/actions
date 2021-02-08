@@ -42,7 +42,7 @@ jobs:
 
       # Add reaction to the original comment
       - name: Add reaction to the original comment
-        uses: cloudposse/actions/github/create-or-update-comment@0.28.0
+        uses: cloudposse/actions/github/create-or-update-comment@0.28.1
         with:
           token: ${{ secrets.PUBLIC_REPO_ACCESS_TOKEN }}
           repository: ${{ github.event.client_payload.github.payload.repository.full_name }}
