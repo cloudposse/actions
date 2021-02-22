@@ -1,0 +1,32 @@
+name: 'Terraform generator'
+description: 'Generates terraform code that calls terraform module'
+author: 'Cloud Posse <hello@cloudposse.com>'
+branding:
+  icon: 'activity'
+  color: 'blue'
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  args:
+    - --component
+    - ${{ inputs.component }}
+    - --module_name
+    - ${{ inputs.module_name }}
+    - --module_source
+    - ${{ inputs.module_source }}
+    - --module_attributes
+    - ${{ inputs.module_attributes }}
+inputs:
+  component:
+    description: 'Component path for output'
+    required: true
+  module_name:
+    description: 'Module name'
+    required: true
+  module_source:
+    description: 'Module source'
+    required: true
+  module_attributes:
+    description: 'Module attributes'
+    default: '{}'
+    required: false

@@ -1,0 +1,30 @@
+images:
+  - name: run
+    description: Run
+    provides:
+      - ./cli/main.variant
+      - terraform-generator
+      - jsonnet
+      - diff
+      - variant
+    image: cloudposse/terraform-generator:latest
+    shell: bash
+    before_script:
+      - source .envrc
+    containerRuntimeAccess: true
+    cache:
+    - name: home
+      directory: /root/
+
+  - name: test
+    description: test
+    provides:
+      - bats
+    image: cloudposse/terraform-generator:test-latest
+    shell: bash
+    before_script:
+      - source .envrc
+    containerRuntimeAccess: true
+    cache:
+      - name: home
+        directory: /root/

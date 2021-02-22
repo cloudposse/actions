@@ -1,0 +1,7 @@
+{
+   "module": {
+      "pr-1": {
+         "source": "git::https://github.com/cloudposse/terraform-null-label.git?ref=0.24.1"
+      }
+   }
+}

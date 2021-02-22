@@ -1,0 +1,11 @@
+{
+   "module": {
+      "pr-1": {
+         "enabled": "true",
+         "name": "test",
+         "namespace": "test-namespace",
+         "source": "git::https://github.com/cloudposse/terraform-null-label.git?ref=0.24.1",
+         "stage": "test-stage"
+      }
+   }
+}
