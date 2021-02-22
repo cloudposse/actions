@@ -39,11 +39,6 @@ RUN variant2 export binary $PWD $CLI_NAME
 RUN ./"$CLI_NAME" help
 
 
-
-FROM alpine:3.10 as base
-
-
-
 # -------------------- Test Image -----------------------------------------
 
 FROM build as test
