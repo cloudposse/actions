@@ -18,4 +18,4 @@ RUN apk add -u \
 # Build the CLI
 WORKDIR /usr/cli
 COPY ./ ./
-ENTRYPOINT [ "/usr/cli/main.variant", "generator", "--install_dir", "/usr/cli" ]
+ENTRYPOINT [ "/usr/cli/main.variant", "--install_dir", "/usr/cli" ]
