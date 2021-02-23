@@ -41,7 +41,7 @@ job "generate" {
 			"--ext-str", "attributes=${jsonencode(jsondecode(opt.module_attributes))}",
 			"--create-output-dirs",
 			"--output-file", "${opt.component}/${opt.module_name}.json",
-			"./module.jsonnet"
+			"module.jsonnet"
 		]
 	}
 }
