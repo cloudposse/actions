@@ -14,8 +14,8 @@ setup() {
     --module_name pr-1
   assert_success
 
-  assert_file_exist ${TEST_TEMP_DIR}/components/preview/pr-1.json
-  run diff ${TEST_TEMP_DIR}/components/preview/pr-1.json ${TEST_TEMP_DIR}/expected.json
+  assert_file_exist ${TEST_TEMP_DIR}/components/preview/pr-1.tf.json
+  run diff ${TEST_TEMP_DIR}/components/preview/pr-1.tf.json ${TEST_TEMP_DIR}/expected.json
   assert_output ""
   assert_success
 }
@@ -30,8 +30,8 @@ setup() {
     --module_attributes '{"enabled": "true", "name": "test", "namespace": "test-namespace", "stage": "test-stage"}'
   assert_success
 
-  assert_file_exist ${TEST_TEMP_DIR}/components/preview/pr-1.json
-  run diff ${TEST_TEMP_DIR}/components/preview/pr-1.json ${TEST_TEMP_DIR}/expected.json
+  assert_file_exist ${TEST_TEMP_DIR}/components/preview/pr-1.tf.json
+  run diff ${TEST_TEMP_DIR}/components/preview/pr-1.tf.json ${TEST_TEMP_DIR}/expected.json
   assert_output ""
   assert_success
 }

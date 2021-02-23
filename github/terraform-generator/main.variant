@@ -46,7 +46,7 @@ job "generate" {
 			"--ext-str", "source=${opt.module_source}",
 			"--ext-str", "attributes=${jsonencode(jsondecode(opt.module_attributes))}",
 			"--create-output-dirs",
-			"--output-file", "${opt.component}/${opt.module_name}.json",
+			"--output-file", "${opt.component}/${opt.module_name}.tf.json",
 			"${opt.install_dir}/module.jsonnet"
 		]
 	}
