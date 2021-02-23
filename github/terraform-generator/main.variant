@@ -34,14 +34,8 @@ job "generate" {
 	}
 
 	run "shell" {
-		command = "jsonnet"
+		command = "ls"
 		args    = [
-			"--ext-str", "name=${opt.module_name}",
-			"--ext-str", "source=${opt.module_source}",
-			"--ext-str", "attributes=${jsonencode(jsondecode(opt.module_attributes))}",
-			"--create-output-dirs",
-			"--output-file", "${opt.component}/${opt.module_name}.json",
-			"$VARIANT_DIR/module.jsonnet"
 		]
 	}
 }
