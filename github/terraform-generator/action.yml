@@ -8,6 +8,7 @@ runs:
   using: 'docker'
   image: 'Dockerfile'
   args:
+    - generate
     - --component
     - ${{ inputs.component }}
     - --module_name
