@@ -4,6 +4,10 @@ set -x
 export GIT_COMMIT_MESSAGE="${GIT_COMMIT_MESSAGE:-autocommit}"
 export GIT_DIRECTORY="${GIT_DIRECTORY:-$(pwd)}"
 
+echo "$(pwd)"
+echo "$(ls -lhat)"
+echo "${GIT_DIRECTORY}"
+
 git -C ${GIT_DIRECTORY} diff --exit-code
 
 if [ $? -ne 0 ]; then
