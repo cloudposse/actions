@@ -5,6 +5,8 @@ export GIT_COMMIT_MESSAGE="${GIT_COMMIT_MESSAGE:-autocommit}"
 export GIT_DIRECTORY="${GIT_DIRECTORY:-$(pwd)}"
 export GIT_BRANCH="${GIT_BRANCH:-$GITHUB_HEAD_REF}"
 
+echo "$(pwd)/${GIT_DIRECTORY}" # debug
+ls -lhat ${GIT_DIRECTORY} # debug
 git -C ${GIT_DIRECTORY} diff --exit-code
 
 if [ $? -ne 0 ]; then
