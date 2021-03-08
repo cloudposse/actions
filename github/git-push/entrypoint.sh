@@ -5,14 +5,7 @@ export GIT_COMMIT_MESSAGE="${GIT_COMMIT_MESSAGE:-autocommit}"
 export GIT_DIRECTORY="${GIT_DIRECTORY:-$(pwd)}"
 export GIT_BRANCH="${GIT_BRANCH:-$GITHUB_HEAD_REF}"
 
-echo "$(pwd)/${GIT_DIRECTORY}" # debug
-ls -lhat ${GIT_DIRECTORY} # debug
-echo "$(pwd)/${GIT_DIRECTORY}/docs" # debug
-ls -lhat ${GIT_DIRECTORY}/docs # debug
-git -C ${GIT_DIRECTORY} branch -avv # debug
-git -C ${GIT_DIRECTORY} log # debug
-
-# Testing for presence of untracked files or presence of modifications in tracked files.
+# Testing for either presence of untracked files or presence of modifications in tracked files.
 if [[ "$(git ls-files --others --directory --exclude-standard | sed q | wc -l)" -ne 0 || "$(git ls-files --others --directory --exclude-standard | sed q | wc -l)" -ne 0 ]]; then
   echo "Changes detected."
   git -C ${GIT_DIRECTORY} config user.name "$(git -C ${GIT_DIRECTORY} --no-pager log --format=format:'%an' -n 1)"
