@@ -13,7 +13,7 @@ git -C ${GIT_DIRECTORY} branch -avv # debug
 git -C ${GIT_DIRECTORY} log # debug
 
 # Testing for presence of untracked files or presence of modifications in tracked files.
-if [ "$(git ls-files --others --directory --exclude-standard | sed q | wc -l)" -ne 0 || "$(git ls-files --others --directory --exclude-standard | sed q | wc -l)" -ne 0 ]; then
+if [[ "$(git ls-files --others --directory --exclude-standard | sed q | wc -l)" -ne 0 || "$(git ls-files --others --directory --exclude-standard | sed q | wc -l)" -ne 0 ]]; then
   echo "Changes detected."
   git -C ${GIT_DIRECTORY} config user.name "$(git -C ${GIT_DIRECTORY} --no-pager log --format=format:'%an' -n 1)"
   git -C ${GIT_DIRECTORY} config user.email "$(git -C ${GIT_DIRECTORY} --no-pager log --format=format:'%ae' -n 1)"
