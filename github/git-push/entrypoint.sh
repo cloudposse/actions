@@ -7,6 +7,8 @@ export GIT_BRANCH="${GIT_BRANCH:-$GITHUB_HEAD_REF}"
 
 echo "$(pwd)/${GIT_DIRECTORY}" # debug
 ls -lhat ${GIT_DIRECTORY} # debug
+echo "$(pwd)/${GIT_DIRECTORY}/docs" # debug
+ls -lhat ${GIT_DIRECTORY}/docs # debug
 git -C ${GIT_DIRECTORY} branch -avv # debug
 git -C ${GIT_DIRECTORY} log # debug
 git -C ${GIT_DIRECTORY} diff --exit-code
