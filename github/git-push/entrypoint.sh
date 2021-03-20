@@ -9,7 +9,6 @@ git -C ${GIT_DIRECTORY} diff --exit-code
 if [ $? -ne 0 ]; then
   echo "Changes detected."
   git -C ${GIT_DIRECTORY} status
-  git -C ${GIT_DIRECTORY} diff
   git -C ${GIT_DIRECTORY} config user.name "$(git -C ${GIT_DIRECTORY} --no-pager log --format=format:'%an' -n 1)"
   git -C ${GIT_DIRECTORY} config user.email "$(git -C ${GIT_DIRECTORY} --no-pager log --format=format:'%ae' -n 1)"
 
