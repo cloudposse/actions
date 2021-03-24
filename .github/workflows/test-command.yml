@@ -389,16 +389,21 @@ jobs:
         USES_TFE: >-
           ${{ contains(github.event.client_payload.github.payload.repository.name, '-tfe-')
           ||  contains(github.event.client_payload.pull_request.labels.*.name, 'terraform-tfe-provider') }}
+        USES_CLOUDFLARE: >-
+          ${{ contains(github.event.client_payload.github.payload.repository.name, '-cloudflare-')
+          ||  contains(github.event.client_payload.pull_request.labels.*.name, 'terraform-cloudflare-provider') }}
 
-        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        AWS_SECRET_KEY:    ${{ secrets.AWS_SECRET_KEY }}
-        GITHUB_TOKEN:      ${{ secrets.PUBLIC_REPO_ACCESS_TOKEN }}
-        OPSGENIE_API_KEY:  ${{ secrets.OPSGENIE_API_KEY }}
-        DD_API_KEY:        ${{ secrets.DD_API_KEY }}
-        DD_APP_KEY:        ${{ secrets.DD_APP_KEY }}
-        SPOTINST_TOKEN:    ${{ secrets.SPOTINST_TOKEN }}
-        SPOTINST_ACCOUNT:  ${{ secrets.SPOTINST_ACCOUNT }}
-        TFE_TOKEN:         ${{ secrets.TFE_TOKEN }}
+        AWS_ACCESS_KEY_ID:  ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_KEY:     ${{ secrets.AWS_SECRET_KEY }}
+        GITHUB_TOKEN:       ${{ secrets.PUBLIC_REPO_ACCESS_TOKEN }}
+        OPSGENIE_API_KEY:   ${{ secrets.OPSGENIE_API_KEY }}
+        DD_API_KEY:         ${{ secrets.DD_API_KEY }}
+        DD_APP_KEY:         ${{ secrets.DD_APP_KEY }}
+        SPOTINST_TOKEN:     ${{ secrets.SPOTINST_TOKEN }}
+        SPOTINST_ACCOUNT:   ${{ secrets.SPOTINST_ACCOUNT }}
+        TFE_TOKEN:          ${{ secrets.TFE_TOKEN }}
+        CLOUDFLARE_EMAIL:   ${{ secrets.CLOUDFLARE_EMAIL }}
+        CLOUDFLARE_API_KEY: ${{ secrets.CLOUDFLARE_API_KEY }}
       shell: bash
       run: |
         if [[ "$USES_AWS" == "true" || "$USES_DATADOG" == "true" || "$USES_SPOTINST" == "true" ]]; then
@@ -427,6 +432,11 @@ jobs:
         if [[ "$USES_TFE" == "true" ]]; then
           printf "%s=%s\n"  TFE_TOKEN   "$TFE_TOKEN"   >> "$GITHUB_ENV"
           echo exported Terraform Cloud
+        fi
+        if [[ "$USES_CLOUDFLARE" == "true" ]]; then
+          printf "%s=%s\n"  CLOUDFLARE_EMAIL   "$CLOUDFLARE_EMAIL"   >> "$GITHUB_ENV"
+          printf "%s=%s\n"  CLOUDFLARE_API_KEY "$CLOUDFLARE_API_KEY" >> "$GITHUB_ENV"
+          echo exported CloudFlare
         fi
 
     - name: "Test `examples/complete` with terratest"
