@@ -90,7 +90,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: parse
     if: needs.parse.outputs.run-readme == 'true'
-    container: cloudposse/testing.cloudposse.co:latest
+    container: cloudposse/test-harness:latest
     env:
       MAKE_INCLUDES: Makefile
     steps:
@@ -175,7 +175,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: parse
     if: needs.parse.outputs.run-bats == 'true'
-    container: cloudposse/testing.cloudposse.co:latest
+    container: cloudposse/test-harness:latest
     env:
       MAKE_INCLUDES: Makefile
       TF_PLUGIN_CACHE_DIR: /tmp
@@ -209,13 +209,16 @@ jobs:
         # Some legacy support is on 0.11 branches and we determine the Terraform version based on the target branch name
         VERSION=$(cut -d/ -f1 <<<${BASE_REF})
         if [[ ${VERSION} != '0.11' ]]; then
-          TF12=0.12.30
-          TF13=$(terraform-0.13 version --json | jq -r .terraform_version)
-          TF14=$(terraform-0.14 version --json | jq -r .terraform_version)
+          TF012=0.12.31
+          TF013=$(terraform-0.13 version --json | jq -r .terraform_version)
+          TF014=$(terraform-0.14 version --json | jq -r .terraform_version)
+          TF015=$(terraform-0.15 version --json | jq -r .terraform_version)
+          TF1=$(terraform-1 version --json | jq -r .terraform_version)
           # vert exits non-zero if any of the versions are not acceptable, so `|| [[ -n "$VERSION" ]]` for a real error check
-          VERSION=$(vert -s "$(terraform-config-inspect --json . | jq -r '.required_core[]')" "$TF12" "$TF13" "$TF14" | head -1) || [[ -n "$VERSION" ]]
-          echo Full version to use is ${VERSION}, setting to ${VERSION:0:4}
-          VERSION=${VERSION:0:4}
+          FULL_VERSION=$(vert -s "$(terraform-config-inspect --json . | jq -r '.required_core[]')" "$TF012" "$TF013" "$TF014" "$TF015" "$TF1" | head -1) || [[ -n "$VERSION" ]]
+          VERSION=${FULL_VERSION:0:4}
+          [[ $VERSION =~ ^1. ]] && VERSION=1
+          echo Full version to use is ${FULL_VERSION}, setting VERSION to ${VERSION}
         fi
 
         # Match lables like `terraform/0.12` or nothing (to prevent non-zero exit code)
@@ -302,7 +305,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: parse
     if: needs.parse.outputs.run-terratest == 'true'
-    container: cloudposse/testing.cloudposse.co:latest
+    container: cloudposse/test-harness:latest
     env:
       MAKE_INCLUDES: Makefile
     steps:
@@ -335,13 +338,16 @@ jobs:
         # Some legacy support is on 0.11 branches and we determine the Terraform version based on the target branch name
         VERSION=$(cut -d/ -f1 <<<${BASE_REF})
         if [[ ${VERSION} != '0.11' ]]; then
-          TF12=0.12.30
-          TF13=$(terraform-0.13 version --json | jq -r .terraform_version)
-          TF14=$(terraform-0.14 version --json | jq -r .terraform_version)
+          TF012=0.12.31
+          TF013=$(terraform-0.13 version --json | jq -r .terraform_version)
+          TF014=$(terraform-0.14 version --json | jq -r .terraform_version)
+          TF015=$(terraform-0.15 version --json | jq -r .terraform_version)
+          TF1=$(terraform-1 version --json | jq -r .terraform_version)
           # vert exits non-zero if any of the versions are not acceptable, so `|| [[ -n "$VERSION" ]]` for a real error check
-          VERSION=$(vert -s "$(terraform-config-inspect --json . | jq -r '.required_core[]')" "$TF12" "$TF13" "$TF14" | head -1) || [[ -n "$VERSION" ]]
-          echo Full version to use is ${VERSION}, setting to ${VERSION:0:4}
-          VERSION=${VERSION:0:4}
+          FULL_VERSION=$(vert -s "$(terraform-config-inspect --json . | jq -r '.required_core[]')" "$TF012" "$TF013" "$TF014" "$TF015" "$TF1" | head -1) || [[ -n "$VERSION" ]]
+          VERSION=${FULL_VERSION:0:4}
+          [[ $VERSION =~ ^1. ]] && VERSION=1
+          echo Full version to use is ${FULL_VERSION}, setting VERSION to ${VERSION}
         fi
 
         # Match lables like `terraform/0.12` or nothing (to prevent non-zero exit code)
@@ -393,22 +399,22 @@ jobs:
           ${{ contains(github.event.client_payload.github.payload.repository.name, '-cloudflare-')
           ||  contains(github.event.client_payload.pull_request.labels.*.name, 'terraform-cloudflare-provider') }}
 
-        AWS_ACCESS_KEY_ID:  ${{ secrets.AWS_ACCESS_KEY_ID }}
-        AWS_SECRET_KEY:     ${{ secrets.AWS_SECRET_KEY }}
-        GITHUB_TOKEN:       ${{ secrets.PUBLIC_REPO_ACCESS_TOKEN }}
-        OPSGENIE_API_KEY:   ${{ secrets.OPSGENIE_API_KEY }}
-        DD_API_KEY:         ${{ secrets.DD_API_KEY }}
-        DD_APP_KEY:         ${{ secrets.DD_APP_KEY }}
-        SPOTINST_TOKEN:     ${{ secrets.SPOTINST_TOKEN }}
-        SPOTINST_ACCOUNT:   ${{ secrets.SPOTINST_ACCOUNT }}
-        TFE_TOKEN:          ${{ secrets.TFE_TOKEN }}
-        CLOUDFLARE_EMAIL:   ${{ secrets.CLOUDFLARE_EMAIL }}
-        CLOUDFLARE_API_KEY: ${{ secrets.CLOUDFLARE_API_KEY }}
+        AWS_ACCESS_KEY_ID:     ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        GITHUB_TOKEN:          ${{ secrets.PUBLIC_REPO_ACCESS_TOKEN }}
+        OPSGENIE_API_KEY:      ${{ secrets.OPSGENIE_API_KEY }}
+        DD_API_KEY:            ${{ secrets.DD_API_KEY }}
+        DD_APP_KEY:            ${{ secrets.DD_APP_KEY }}
+        SPOTINST_TOKEN:        ${{ secrets.SPOTINST_TOKEN }}
+        SPOTINST_ACCOUNT:      ${{ secrets.SPOTINST_ACCOUNT }}
+        TFE_TOKEN:             ${{ secrets.TFE_TOKEN }}
+        CLOUDFLARE_EMAIL:      ${{ secrets.CLOUDFLARE_EMAIL }}
+        CLOUDFLARE_API_KEY:    ${{ secrets.CLOUDFLARE_API_KEY }}
       shell: bash
       run: |
         if [[ "$USES_AWS" == "true" || "$USES_DATADOG" == "true" || "$USES_SPOTINST" == "true" ]]; then
-          printf "%s=%s\n"  AWS_ACCESS_KEY_ID "$AWS_ACCESS_KEY_ID" >> "$GITHUB_ENV"
-          printf "%s=%s\n"  AWS_SECRET_KEY    "$AWS_SECRET_KEY"    >> "$GITHUB_ENV"
+          printf "%s=%s\n"  AWS_ACCESS_KEY_ID      "$AWS_ACCESS_KEY_ID"      >> "$GITHUB_ENV"
+          printf "%s=%s\n"  AWS_SECRET_ACCESS_KEY  "$AWS_SECRET_ACCESS_KEY"  >> "$GITHUB_ENV"
           echo exported AWS
         fi
         if [[ "$USES_DATADOG" == "true" ]]; then
