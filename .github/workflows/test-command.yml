@@ -222,7 +222,8 @@ jobs:
         fi
 
         # Match lables like `terraform/0.12` or nothing (to prevent non-zero exit code)
-        OVERRIDE_VERSION=$(grep -Eo '(terraform/\d+\.\d+|)' <<<${LABELS} | cut -d/ -f2)
+        # Use [0-9] because \d is not standard part of egrep
+        OVERRIDE_VERSION=$(grep -Eo '(terraform/[0-9]+\.[0-9]+|)' <<<${LABELS} | cut -d/ -f2)
 
         if [ -n "${OVERRIDE_VERSION}" ]; then
           VERSION=${OVERRIDE_VERSION}
@@ -351,7 +352,8 @@ jobs:
         fi
 
         # Match lables like `terraform/0.12` or nothing (to prevent non-zero exit code)
-        OVERRIDE_VERSION=$(grep -Eo '(terraform/\d+\.\d+|)' <<<${LABELS} | cut -d/ -f2)
+        # Use [0-9] because \d is not standard part of egrep
+        OVERRIDE_VERSION=$(grep -Eo '(terraform/[0-9]+\.[0-9]+|)' <<<${LABELS} | cut -d/ -f2)
 
         if [ -n "${OVERRIDE_VERSION}" ]; then
           VERSION=${OVERRIDE_VERSION}
