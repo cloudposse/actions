@@ -28,9 +28,9 @@ runs:
         echo "pwd: $(pwd)"
         ls -l .
         echo "github.action_path: ${{ github.action_path }}"
-        ls -l ${{ github.action_path }}
+        ls -l ${{ github.action_path }} || true
         echo "GITHUB_ACTION_PATH: ${GITHUB_ACTION_PATH}"
-        ls -l ${GITHUB_ACTION_PATH}
+        ls -l ${GITHUB_ACTION_PATH} || true
 
 #    - name: Identify Plan Changes
 #      id: identify-plan-changes
