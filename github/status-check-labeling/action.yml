@@ -21,6 +21,17 @@ inputs:
 runs:
   using: "composite"
   steps:
+    - name: debugging
+      id: debugging
+      shell: bash
+      run: |
+        echo "pwd: $(pwd)"
+        ls -l .
+        echo "github.action_path: ${{ github.action_path }}"
+        ls -l ${{ github.action_path }}
+        echo "GITHUB_ACTION_PATH: ${GITHUB_ACTION_PATH}"
+        ls -l ${GITHUB_ACTION_PATH}
+
     - name: Identify Plan Changes
       id: identify-plan-changes
       shell: bash
