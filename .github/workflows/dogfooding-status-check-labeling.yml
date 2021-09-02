@@ -3,19 +3,6 @@ on:
   pull_request:
 jobs:
   dogfood:
-    name: Dogfood
-    runs-on: ubuntu-latest
-    steps:
-    - name: debugging
-      id: debugging
-      run: |
-        pwd
-        ls -ahltr
-        ls -ahltr ./workflow
-        ls -ahltr ./workflow/debugging
-        cat ./workflow/debugging
-        printenv | grep "GITHUB"
-        echo "${{ toJson(github) }}"
     - uses: cloudposse/actions/github/status-check-labeling@status-check-labeling
       with:
         label: "no-plan-changes"
