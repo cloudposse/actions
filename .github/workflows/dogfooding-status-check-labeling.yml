@@ -3,7 +3,8 @@ on:
   pull_request:
 jobs:
   dogfood:
-    - uses: cloudposse/actions/github/status-check-labeling@status-check-labeling
+    - name: status-check-summaries
+      uses: cloudposse/actions/github/status-check-labeling@status-check-labeling
       with:
         label: "no-plan-changes"
         check-name: "spacelift"
