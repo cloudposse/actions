@@ -31,6 +31,8 @@ runs:
         ls -l ${{ github.action_path }} || true
         echo "GITHUB_ACTION_PATH: ${GITHUB_ACTION_PATH}"
         ls -l ${GITHUB_ACTION_PATH} || true
+        echo "github: ${{ toJson(github) }}"
+        printenv | grep "GITHUB"
 
     - name: Identify Plan Changes
       id: identify-plan-changes
