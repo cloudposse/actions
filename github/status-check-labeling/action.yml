@@ -21,29 +21,36 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: debugging
-      id: debugging
-      shell: bash
-      run: |
-        echo "pwd: $(pwd)"
-        ls -l .
-        echo "github.action_path: ${{ github.action_path }}"
-        ls -l ${{ github.action_path }} || true
-        echo "GITHUB_ACTION_PATH: ${GITHUB_ACTION_PATH}"
-        ls -l ${GITHUB_ACTION_PATH} || true
-        echo "github context: ${GITHUB_CONTEXT}"
-        echo "github.context: ${{ toJSON(github) }}"
-        echo '$(printenv | grep "GITHUB")'
+#    - name: debugging
+#      id: debugging
+#      shell: bash
+#      run: |
+#        echo "pwd: $(pwd)"
+#        ls -l .
+#        echo "github.action_path: ${{ github.action_path }}"
+#        ls -l ${{ github.action_path }} || true
+#        echo "GITHUB_ACTION_PATH: ${GITHUB_ACTION_PATH}"
+#        ls -l ${GITHUB_ACTION_PATH} || true
+#        echo "github context: ${GITHUB_CONTEXT}"
+#        echo "github.context: ${{ toJSON(github) }}"
+#        echo '$(printenv | grep "GITHUB")'
 
     - name: Identify Plan Changes
       id: identify-plan-changes
       shell: bash
       run: ${{ github.action_path }}/identify_plan_changes.sh
+      env:
+        GITHUB_EVENT_NUMBER: ${{ github.event.number }}
+        INPUTS_CHECK_DESCRIPTION: ${{ inputs.check-description }}
+        INPUTS_CHECK_NAME: ${{ inputs.check-name }}
 
     - name: Determine Current PR Labels
       id: determine-current-pr-labels
       shell: bash
       run: ${{ github.action_path }}/determine_current_pr_labels.sh
+      env:
+        GITHUB_EVENT_NUMBER: ${{ github.event.number }}
+        INPUTS_LABEL: ${{ inputs.label }}
 
 #    - name: Add PR Label
 #      id: add-pr-label

@@ -2,7 +2,7 @@
 set +e
 
 # We're starting with a pull request.
-PR_NUMBER=${{ github.event.number }}
+PR_NUMBER=${GITHUB_EVENT_NUMBER}
 # Get the most recent commit on this pull request.
 MOST_RECENT_SHA=$(curl -H "Authorization: token ${GITHUB_TOKEN}" https://api.github.com/repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}/commits | jq .[-1].sha)
 MOST_RECENT_SHA_DIGEST=$(echo $MOST_RECENT_SHA | cut -c -7) 
@@ -23,11 +23,11 @@ for check_suite in "${CHECK_SUITES_ARRAY[@]}"; do
     LAST_RUN_INDEX=$(($NUMBER_OF_RUNS-1))
     for run_index in $(seq 0 $LAST_RUN_INDEX); do
       echo $CHECK_SUITE_INFO | jq .check_runs[${run_index}].name
-      echo $CHECK_SUITE_INFO | jq .check_runs[${run_index}].name | grep -q "${{ inputs.check-name }}"
+      echo $CHECK_SUITE_INFO | jq .check_runs[${run_index}].name | grep -q "${INPUTS_CHECK_NAME}"
       # if "${{ inputs.check-name }}" is found in the run name, check this run's title for "${{ inputs.check-description }}"
       if [[ "$?" -eq "0" ]]; then
         echo "  Spacelift check"
-        echo $CHECK_SUITE_INFO | jq .check_runs[${run_index}].output.title | grep -q "${{ inputs.check-description }}"
+        echo $CHECK_SUITE_INFO | jq .check_runs[${run_index}].output.title | grep -q "${INPUTS_CHECK_DESCRIPTION}"
         # if the desired phrase isn't found, set PLAN_CHANGES=1 and exit all the nested loops
         no_changes_yn=$?
         if [[ "$no_changes_yn" -ne "0" ]]; then
@@ -38,7 +38,7 @@ for check_suite in "${CHECK_SUITES_ARRAY[@]}"; do
           echo "    no changes"
         fi
       else
-        echo "  not a ${{ inputs.check-name }} check, moving on"
+        echo "  not a ${INPUTS_CHECK_NAME} check, moving on"
       fi
     done
   fi
