@@ -19,6 +19,8 @@ CHECK_SUITES_ARRAY=( $CHECK_SUITES )
 for check_suite in "${CHECK_SUITES_ARRAY[@]}"; do
   echo "check_suite: $check_suite"
   CHECK_SUITE_INFO=$(curl -H "Authorization: token ${GITHUB_TOKEN}" https://api.github.com/repos/${GITHUB_REPOSITORY}/check-suites/${check_suite}/check-runs)
+  echo "CHECK_SUITE_INFO:"
+  cat ${CHECK_SUITE_INFO} | jq .
   NUMBER_OF_RUNS=$( echo $CHECK_SUITE_INFO | jq '.check_runs | length')
   # Check each run in the check suite for ${{ inputs.check-name }}ivity
   if [ "$NUMBER_OF_RUNS" -gt "0" ]; then
