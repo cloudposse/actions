@@ -1,6 +1,9 @@
 # I'm expecting some greps to fail, so we want to continue running whenever we encounter errors.
 set +e
 
+# Debug
+echo "GITHUB_REPOSITORY: $GITHUB_REPOSITORY"
+
 # We're starting with a pull request.
 PR_NUMBER=${GITHUB_EVENT_NUMBER}
 # Get the most recent commit on this pull request.
