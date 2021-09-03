@@ -41,7 +41,7 @@ runs:
       run: ${{ github.action_path }}/identify_plan_changes.sh
       env:
         GITHUB_EVENT_NUMBER: ${{ github.event.number }}
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${GITHUB_TOKEN}
         INPUTS_CHECK_DESCRIPTION: ${{ inputs.check-description }}
         INPUTS_CHECK_NAME: ${{ inputs.check-name }}
 
@@ -51,7 +51,7 @@ runs:
       run: ${{ github.action_path }}/determine_current_pr_labels.sh
       env:
         GITHUB_EVENT_NUMBER: ${{ github.event.number }}
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${GITHUB_TOKEN}
         INPUTS_LABEL: ${{ inputs.label }}
 
 #    - name: Add PR Label
