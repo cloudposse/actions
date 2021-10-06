@@ -217,13 +217,12 @@ jobs:
           # vert exits non-zero if any of the versions are not acceptable, so `|| [[ -n "$VERSION" ]]` for a real error check
           FULL_VERSION=$(vert -s "$(terraform-config-inspect --json . | jq -r '.required_core[]')" "$TF012" "$TF013" "$TF014" "$TF015" "$TF1" | head -1) || [[ -n "$VERSION" ]]
           VERSION=${FULL_VERSION:0:4}
-          [[ $VERSION =~ ^1. ]] && VERSION=1
           echo Full version to use is ${FULL_VERSION}, setting VERSION to ${VERSION}
         fi
 
         # Match lables like `terraform/0.12` or nothing (to prevent non-zero exit code)
         # Use [0-9] because \d is not standard part of egrep
-        OVERRIDE_VERSION=$(grep -Eo '(terraform/[0-9]+\.[0-9]+|)' <<<${LABELS} | cut -d/ -f2)
+        OVERRIDE_VERSION=$(grep -Eo '(terraform/[0-9]+\.[x0-9]+|)' <<<${LABELS} | cut -d/ -f2)
 
         if [ -n "${OVERRIDE_VERSION}" ]; then
           VERSION=${OVERRIDE_VERSION}
@@ -231,6 +230,8 @@ jobs:
         else
           echo "Terraform ${VERSION} is required for ${BASE_REF}..."
         fi
+  
+        [[ $VERSION =~ ^1\. ]] && VERSION=1
 
         PATH_TO_TERRAFORM="/usr/local/terraform/${VERSION}/bin"
         if [ -x "${PATH_TO_TERRAFORM}/terraform" ]; then
@@ -239,6 +240,7 @@ jobs:
           echo "Unable to locate executable for terraform ${VERSION}" >&2
           exit 1
         fi
+
       env:
         # Pull request target branch
         BASE_REF: ${{ github.event.client_payload.pull_request.base.ref }}
@@ -347,13 +349,12 @@ jobs:
           # vert exits non-zero if any of the versions are not acceptable, so `|| [[ -n "$VERSION" ]]` for a real error check
           FULL_VERSION=$(vert -s "$(terraform-config-inspect --json . | jq -r '.required_core[]')" "$TF012" "$TF013" "$TF014" "$TF015" "$TF1" | head -1) || [[ -n "$VERSION" ]]
           VERSION=${FULL_VERSION:0:4}
-          [[ $VERSION =~ ^1. ]] && VERSION=1
           echo Full version to use is ${FULL_VERSION}, setting VERSION to ${VERSION}
         fi
 
         # Match lables like `terraform/0.12` or nothing (to prevent non-zero exit code)
         # Use [0-9] because \d is not standard part of egrep
-        OVERRIDE_VERSION=$(grep -Eo '(terraform/[0-9]+\.[0-9]+|)' <<<${LABELS} | cut -d/ -f2)
+        OVERRIDE_VERSION=$(grep -Eo '(terraform/[0-9]+\.[x0-9]+|)' <<<${LABELS} | cut -d/ -f2)
 
         if [ -n "${OVERRIDE_VERSION}" ]; then
           VERSION=${OVERRIDE_VERSION}
@@ -361,6 +362,8 @@ jobs:
         else
           echo "Terraform ${VERSION} is required for ${BASE_REF}..."
         fi
+
+        [[ $VERSION =~ ^1\. ]] && VERSION=1
 
         PATH_TO_TERRAFORM="/usr/local/terraform/${VERSION}/bin"
         if [ -x "${PATH_TO_TERRAFORM}/terraform" ]; then
@@ -376,7 +379,9 @@ jobs:
 
     # Initialize the terratest go project
     - name: "Initialize terratest Go project"
-      run: make -C test/src clean init
+      run: |
+        make -C test/src clean init
+        rm -rf examples/*/.terraform examples/*/.terraform.lock.hcl
     - name: "Inject secrets"
       env:
         USES_GITHUB:   >-
