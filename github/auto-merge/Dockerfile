@@ -1,4 +1,4 @@
-FROM node:11-alpine
+FROM node:17-alpine
 
 LABEL "com.github.actions.name"="Merge pull requests"
 LABEL "com.github.actions.description"="Automatically merge pull requests that are ready"
