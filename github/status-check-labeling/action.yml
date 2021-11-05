@@ -46,10 +46,10 @@ runs:
       run: |
         echo "pwd: $(pwd)"
         ls -l .
-        echo "no_changes: $NO_CHANGES"
+        echo "label_needed: $LABEL_NEEDED"
         echo "changes: $CHANGES"
       env:
-        NO_CHANGES: ${{ steps.determine-current-pr-labels.outputs.no_changes }}
+        LABEL_NEEDED: ${{ steps.determine-current-pr-labels.outputs.label_needed }}
         CHANGES: ${{ steps.identify-required-pr-labels.outputs.label_needed }}
 
 #        echo "github.action_path: ${{ github.action_path }}"
