@@ -10,8 +10,8 @@ jobs:
         uses: cloudposse/actions/github/status-check-labeling@status-check-labeling
         with:
           label: "no-plan-changes"
-          check-name: "spacelift"
-          check-description: "Plan contains no changes"
+          name-contains: "spacelift"
+          description-contains: "Plan contains no changes"
         env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
 #      - name: Add PR Label
