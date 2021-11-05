@@ -10,11 +10,11 @@ inputs:
     description: "Label to add/remove (be sure to sync with labels in labeler-add.yml and labeler-remove.yml)"
     required: true
     default: "no-plan-changes"
-  check-name:
+  name-contains:
     description: "String to use to identify relevant status checks"
     required: true
     default: "spacelift"
-  check-description:
+  description-contains:
     description: "String that all relevant status checks descriptions must contain in order to apply the label"
     required: true
     default: "Plan contains no changes"
@@ -42,8 +42,8 @@ runs:
       env:
         GITHUB_EVENT_NUMBER: ${{ github.event.number }}
         GITHUB_TOKEN: ${GITHUB_TOKEN}
-        INPUTS_CHECK_DESCRIPTION: ${{ inputs.check-description }}
-        INPUTS_CHECK_NAME: ${{ inputs.check-name }}
+        INPUTS_CHECK_DESCRIPTION: ${{ inputs.description-contains }}
+        INPUTS_CHECK_NAME: ${{ inputs.name-contains }}
 
     - name: Determine Current PR Labels
       id: determine-current-pr-labels
