@@ -70,7 +70,7 @@ runs:
 
     - name: Remove PR Label
       id: remove-pr-label
-      if: steps.determine-current-label-prs.outputs.no_changes && steps.identify-plan-changes.outputs.changes
+      if: steps.determine-current-pr-labels.outputs.no_changes && steps.identify-plan-changes.outputs.changes
       shell: bash
       run: ${{ github.action_path }}/remove_pr_label.sh
       env:
