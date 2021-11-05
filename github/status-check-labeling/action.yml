@@ -54,19 +54,18 @@ runs:
         GITHUB_TOKEN: ${GITHUB_TOKEN}
         INPUTS_LABEL: ${{ inputs.label }}
 
-#    - name: Add PR Label
-#      id: add-pr-label
-#      if: (! steps.determine-current-label-prs.outputs.no_changes) && (! steps.identify-plan-changes.outputs.changes)
-#      uses: actions/labeler@v3
-#      with:
-#        configuration-path: labeler-add-example.yml
-#        repo-token: "${{ secrets.GITHUB_TOKEN }}"
-#
-#    - name: Remove PR Label
-#      id: remove-pr-label
-#      if: steps.determine-current-label-prs.outputs.no_changes && steps.identify-plan-changes.outputs.changes
-#      uses: actions/labeler@v3
-#      with:
-#        configuration-path: labeler-remove-example.yml
-#        repo-token: "${{ secrets.GITHUB_TOKEN }}"
-#        sync-labels: true
+    - name: Add PR Label
+      id: add-pr-label
+      if: (! steps.determine-current-label-prs.outputs.no_changes) && (! steps.identify-plan-changes.outputs.changes)
+      shell: bash
+      run: ${{ github.action_path }}/add_pr_label.sh
+      env:
+        LABEL: ${{ inputs.label }}
+
+    - name: Remove PR Label
+      id: remove-pr-label
+      if: steps.determine-current-label-prs.outputs.no_changes && steps.identify-plan-changes.outputs.changes
+      shell: bash
+      run: ${{ github.action_path }}/remove_pr_label.sh
+      env:
+        LABEL: ${{ inputs.label }}
