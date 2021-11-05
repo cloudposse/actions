@@ -49,7 +49,7 @@ runs:
         echo "no_changes: $NO_CHANGES"
         echo "changes: $CHANGES"
       env:
-        NO_CHANGES: ${{ steps.determine-current-label-prs.outputs.no_chages }}
+        NO_CHANGES: ${{ steps.determine-current-pr-labels.outputs.no_chages }}
         CHANGES: ${{ steps.identify-plan-changes.outputs.changes }}
 
 #        echo "github.action_path: ${{ github.action_path }}"
@@ -62,7 +62,7 @@ runs:
 
     - name: Add PR Label
       id: add-pr-label
-      if: (! steps.determine-current-label-prs.outputs.no_changes) && (! steps.identify-plan-changes.outputs.changes)
+      if: (! steps.determine-current-pr-labels.outputs.no_changes) && (! steps.identify-plan-changes.outputs.changes)
       shell: bash
       run: ${{ github.action_path }}/add_pr_label.sh
       env:
