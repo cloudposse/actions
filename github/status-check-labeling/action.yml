@@ -46,11 +46,11 @@ runs:
       run: |
         echo "pwd: $(pwd)"
         ls -l .
-        echo "no_changes: $INPUTS_NO_CHANGES"
-        echo "changes: $INPUTS_CHANGES"
-      with:
-        no_changes: ${{ steps.determine-current-label-prs.outputs.no_chages }}
-        changes: ${{ steps.identify-plan-changes.outputs.changes }}
+        echo "no_changes: $NO_CHANGES"
+        echo "changes: $CHANGES"
+      env:
+        NO_CHANGES: ${{ steps.determine-current-label-prs.outputs.no_chages }}
+        CHANGES: ${{ steps.identify-plan-changes.outputs.changes }}
 
 #        echo "github.action_path: ${{ github.action_path }}"
 #        ls -l ${{ github.action_path }} || true
