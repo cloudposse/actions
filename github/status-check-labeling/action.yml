@@ -21,20 +21,6 @@ inputs:
 runs:
   using: "composite"
   steps:
-#    - name: debugging
-#      id: debugging
-#      shell: bash
-#      run: |
-#        echo "pwd: $(pwd)"
-#        ls -l .
-#        echo "github.action_path: ${{ github.action_path }}"
-#        ls -l ${{ github.action_path }} || true
-#        echo "GITHUB_ACTION_PATH: ${GITHUB_ACTION_PATH}"
-#        ls -l ${GITHUB_ACTION_PATH} || true
-#        echo "github context: ${GITHUB_CONTEXT}"
-#        echo "github.context: ${{ toJSON(github) }}"
-#        echo '$(printenv | grep "GITHUB")'
-
     - name: Identify Plan Changes
       id: identify-plan-changes
       shell: bash
@@ -53,6 +39,26 @@ runs:
         GITHUB_EVENT_NUMBER: ${{ github.event.number }}
         GITHUB_TOKEN: ${GITHUB_TOKEN}
         INPUTS_LABEL: ${{ inputs.label }}
+
+    - name: debugging
+      id: debugging
+      shell: bash
+      run: |
+        echo "pwd: $(pwd)"
+        ls -l .
+        echo "no_changes: $INPUTS_NO_CHANGES"
+        echo "changes: $INPUTS_CHANGES"
+      with:
+        no_changes: ${{ steps.determine-current-label-prs.outputs.no_chages }}
+        changes: ${{ steps.identify-plan-changes.outputs.changes }}
+
+#        echo "github.action_path: ${{ github.action_path }}"
+#        ls -l ${{ github.action_path }} || true
+#        echo "GITHUB_ACTION_PATH: ${GITHUB_ACTION_PATH}"
+#        ls -l ${GITHUB_ACTION_PATH} || true
+#        echo "github context: ${GITHUB_CONTEXT}"
+#        echo "github.context: ${{ toJSON(github) }}"
+#        echo '$(printenv | grep "GITHUB")'
 
     - name: Add PR Label
       id: add-pr-label
