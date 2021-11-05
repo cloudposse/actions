@@ -49,7 +49,7 @@ runs:
         echo "no_changes: $NO_CHANGES"
         echo "changes: $CHANGES"
       env:
-        NO_CHANGES: ${{ steps.determine-current-pr-labels.outputs.no_chages }}
+        NO_CHANGES: ${{ steps.determine-current-pr-labels.outputs.no_changes }}
         CHANGES: ${{ steps.identify-plan-changes.outputs.changes }}
 
 #        echo "github.action_path: ${{ github.action_path }}"
