@@ -6,7 +6,8 @@ LABEL_PRESENT=0
 PR_NUMBER=${GITHUB_EVENT_NUMBER}
 # Get the number of labels.
 PR_INFO=$(curl \
-    -H "Authorization: access_token ${GITHUB_TOKEN}" \
+    -H "Accept: application/vnd.github.v3+json" \
+    -H "Authorization: token ${GITHUB_TOKEN}" \
     https://api.github.com/repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER})
 NUMBER_OF_LABELS=$( echo "$PR_INFO" | jq '.labels | length' )
 # Check each label in the PR to see if it's the label of interest.
