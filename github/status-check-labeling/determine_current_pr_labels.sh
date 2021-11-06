@@ -2,7 +2,7 @@
 set +e
 
 # We're starting with a pull request and we want to determine whether it already has the label of interest.
-PR_LABELED=0
+LABEL_PRESENT=0
 PR_NUMBER=${GITHUB_EVENT_NUMBER}
 # Get the number of labels.
 PR_INFO=$(curl -H "Authorization: access_token ${GITHUB_TOKEN}" https://api.github.com/repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER})
@@ -17,15 +17,15 @@ if [ "$NUMBER_OF_LABELS" -gt "0" ]; then
     echo $PR_INFO | jq .labels[${label_index}].name
     echo $PR_INFO | jq .labels[${label_index}].name | grep -q "${INPUTS_LABEL}"
     label_yn=$?
-    # if label of interest is found in the labels list, set PR_LABELED=1 and break the loop
+    # if label of interest is found in the labels list, set LABEL_PRESENT=1 and break the loop
     if [[ "$label_yn" -eq "0" ]]; then
         echo "Label found."
-        PR_LABELED=1
+        LABEL_PRESENT=1
         break
     fi
   done
 fi
 
 # Now that we've determined whether the PR is already labeled, let's export that information
-echo "PR_LABELED: $PR_LABELED"
-echo "::set-output name=no_changes::${PR_LABELED}"
+echo "LABEL_PRESENT: $LABEL_PRESENT"
+echo "::set-output name=label_present::${LABEL_PRESENT}"

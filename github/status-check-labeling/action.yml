@@ -47,10 +47,10 @@ runs:
         echo "pwd: $(pwd)"
         ls -l .
         echo "label_needed: $LABEL_NEEDED"
-        echo "changes: $CHANGES"
+        echo "label_present: $LABEL_PRESENT"
       env:
-        LABEL_NEEDED: ${{ steps.determine-current-pr-labels.outputs.label_needed }}
-        CHANGES: ${{ steps.identify-required-pr-labels.outputs.label_needed }}
+        LABEL_NEEDED: ${{ steps.identify-required-pr-labels.outputs.label_needed }}
+        LABEL_PRESENT: ${{ steps.determine-current-pr-labels.outputs.label_present }}
 
 #        echo "github.action_path: ${{ github.action_path }}"
 #        ls -l ${{ github.action_path }} || true
@@ -62,7 +62,7 @@ runs:
 
     - name: Add PR Label
       id: add-pr-label
-      if: (! steps.determine-current-pr-labels.outputs.no_changes) && (! steps.identify-required-pr-labels.outputs.label_needed)
+      if: steps.identify-required-pr-labels.outputs.label_needed && (! steps.determine-current-pr-labels.outputs.label_present)
       shell: bash
       run: ${{ github.action_path }}/add_pr_label.sh
       env:
@@ -70,7 +70,7 @@ runs:
 
     - name: Remove PR Label
       id: remove-pr-label
-      if: steps.determine-current-pr-labels.outputs.no_changes && steps.identify-required-pr-labels.outputs.label_needed
+      if: (! steps.identify-required-pr-labels.outputs.label_needed) && steps.determine-current-pr-labels.outputs.label_present
       shell: bash
       run: ${{ github.action_path }}/remove_pr_label.sh
       env:
