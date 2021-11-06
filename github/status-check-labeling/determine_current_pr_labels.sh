@@ -10,6 +10,7 @@ NUMBER_OF_LABELS=$( echo "$PR_INFO" | jq '.labels | length' )
 # Check each label in the PR to see if it's the label of interest.
 if [ "$NUMBER_OF_LABELS" -gt "0" ]; then
   # show all labels, for debugging purposes
+  echo "current labels:"
   echo $PR_INFO | jq '.labels'
   # grep for ${INPUTS_LABEL} in the labels list
   LAST_LABEL_INDEX=$(($NUMBER_OF_LABELS-1))
