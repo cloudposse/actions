@@ -4,7 +4,7 @@ set +e
 # We're starting with a pull request.
 PR_NUMBER=${GITHUB_EVENT_NUMBER}
 # Get the most recent commit on this pull request.
-MOST_RECENT_SHA=$(curl -v \
+MOST_RECENT_SHA=$(curl \
     -H "Authorization: token ${GITHUB_TOKEN}" \
     https://api.github.com/repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}/commits | \
     jq .[-1].sha)

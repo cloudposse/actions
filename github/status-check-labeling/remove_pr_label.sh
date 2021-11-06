@@ -9,7 +9,7 @@ echo "pr_number: $PR_NUMBER"
 echo "github_repository: $GITHUB_REPOSITORY"
 echo "label: $LABEL"
 
-RESPONSE=$(curl -v \
+RESPONSE=$(curl \
   -X DELETE \
   -H "Accept: application/vnd.github.v3+json" \
   -H "Authorization: token ${GITHUB_TOKEN}" \

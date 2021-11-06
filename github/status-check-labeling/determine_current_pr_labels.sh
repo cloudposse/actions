@@ -5,7 +5,7 @@ set +e
 LABEL_PRESENT=0
 PR_NUMBER=${GITHUB_EVENT_NUMBER}
 # Get the number of labels.
-PR_INFO=$(curl -v \
+PR_INFO=$(curl \
     -H "Authorization: access_token ${GITHUB_TOKEN}" \
     https://api.github.com/repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER})
 NUMBER_OF_LABELS=$( echo "$PR_INFO" | jq '.labels | length' )
