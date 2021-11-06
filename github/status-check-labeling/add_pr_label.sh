@@ -3,6 +3,7 @@ set +e
 
 # We already know that the pull request should have the label of interest but doesn't. Let's rectify that.
 echo "Adding PR label."
+PR_NUMBER=${GITHUB_EVENT_NUMBER}
 RESPONSE=$(curl \
   -X POST \
   -d '{"labels":["${LABEL}"]}'

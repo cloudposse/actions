@@ -3,6 +3,7 @@ set +e
 
 # We already know that the pull request has our label of interest when it shouldn't. We'll rectify that.
 echo "Removing PR label."
+PR_NUMBER=${GITHUB_EVENT_NUMBER}
 RESPONSE=$(curl \
   -X DELETE \
   -H "Accept: application/vnd.github.v3+json" \
