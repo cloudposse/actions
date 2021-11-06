@@ -9,7 +9,7 @@ COMMIT_LOG_INFO=$(curl \
     -H "Accept: application/vnd.github.v3+json" \
     https://api.github.com/repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}/commits)
 MOST_RECENT_SHA=$(echo $COMMIT_LOG_INFO | jq .[-1].sha)
-MOST_RECENT_SHA_DIGEST=$(echo $MOST_RECENT_SHA | cut -c -7) 
+MOST_RECENT_SHA_DIGEST=$(echo $MOST_RECENT_SHA | cut -c 2-8) # literal quotes in the string
 echo "most_recent_sha: $MOST_RECENT_SHA"
 echo "most_recent_sha_digest: $MOST_RECENT_SHA_DIGEST"
 
