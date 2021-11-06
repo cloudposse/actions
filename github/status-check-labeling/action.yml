@@ -18,6 +18,9 @@ inputs:
     description: "String that all relevant status checks descriptions must contain in order to apply the label"
     required: true
     default: "Plan contains no changes"
+  github-token:
+    description: "Token provided by the github actions runner"
+    required: true
 runs:
   using: "composite"
   steps:
@@ -27,7 +30,7 @@ runs:
       run: ${{ github.action_path }}/identify_required_pr_labels.sh
       env:
         GITHUB_EVENT_NUMBER: ${{ github.event.number }}
-        GITHUB_TOKEN: ${GITHUB_TOKEN}
+        GITHUB_TOKEN: ${{ inputs.github-token }}
         INPUTS_CHECK_DESCRIPTION: ${{ inputs.description-contains }}
         INPUTS_CHECK_NAME: ${{ inputs.name-contains }}
 
