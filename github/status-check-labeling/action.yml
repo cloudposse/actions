@@ -67,6 +67,7 @@ runs:
       run: ${{ github.action_path }}/add_pr_label.sh
       env:
         GITHUB_EVENT_NUMBER: ${{ github.event.number }}
+        GITHUB_TOKEN: ${GITHUB_TOKEN}
         LABEL: ${{ inputs.label }}
 
     - name: Remove PR Label
@@ -76,4 +77,5 @@ runs:
       run: ${{ github.action_path }}/remove_pr_label.sh
       env:
         GITHUB_EVENT_NUMBER: ${{ github.event.number }}
+        GITHUB_TOKEN: ${GITHUB_TOKEN}
         LABEL: ${{ inputs.label }}
