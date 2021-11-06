@@ -20,7 +20,6 @@ CHECK_SUITES_INFO=$(curl \
     -H "Accept: application/vnd.github.v3+json" \
     -H "Authorization: token ${GITHUB_TOKEN}" \
     https://api.github.com/repos/${GITHUB_REPOSITORY}/commits/${MOST_RECENT_SHA_DIGEST}/check-suites)
-echo "check_suites_info: $CHECK_SUITES_INFO"
 CHECK_SUITES_NAMES=$(echo $CHECK_SUITES_INFO | jq .check_suites[].id)
 CHECK_SUITES_ARRAY=( $CHECK_SUITES_NAMES )
 # For each check suite, get the number of runs in that check suite
@@ -30,8 +29,8 @@ for check_suite in "${CHECK_SUITES_ARRAY[@]}"; do
     -H "Accept: application/vnd.github.v3+json" \
     -H "Authorization: token ${GITHUB_TOKEN}" \
     https://api.github.com/repos/${GITHUB_REPOSITORY}/check-suites/${check_suite}/check-runs)
-  echo "CHECK_SUITE_INFO:"
-  cat ${CHECK_SUITE_INFO} | jq .
+  #echo "CHECK_SUITE_INFO:"
+  #cat ${CHECK_SUITE_INFO} | jq .
   NUMBER_OF_RUNS=$( echo $CHECK_SUITE_INFO | jq '.check_runs | length')
   # Check each run in the check suite for ${{ inputs.check-name }}ivity
   if [ "$NUMBER_OF_RUNS" -gt "0" ]; then
