@@ -40,7 +40,7 @@ runs:
       run: ${{ github.action_path }}/determine_current_pr_labels.sh
       env:
         GITHUB_EVENT_NUMBER: ${{ github.event.number }}
-        GITHUB_TOKEN: ${GITHUB_TOKEN}
+        GITHUB_TOKEN: ${{ inputs.github-token }}
         INPUTS_LABEL: ${{ inputs.label }}
 
     - name: debugging
@@ -70,7 +70,7 @@ runs:
       run: ${{ github.action_path }}/add_pr_label.sh
       env:
         GITHUB_EVENT_NUMBER: ${{ github.event.number }}
-        GITHUB_TOKEN: ${GITHUB_TOKEN}
+        GITHUB_TOKEN: ${{ inputs.github-token }}
         LABEL: ${{ inputs.label }}
 
     - name: Remove PR Label
@@ -80,5 +80,5 @@ runs:
       run: ${{ github.action_path }}/remove_pr_label.sh
       env:
         GITHUB_EVENT_NUMBER: ${{ github.event.number }}
-        GITHUB_TOKEN: ${GITHUB_TOKEN}
+        GITHUB_TOKEN: ${{ inputs.github-token }}
         LABEL: ${{ inputs.label }}
