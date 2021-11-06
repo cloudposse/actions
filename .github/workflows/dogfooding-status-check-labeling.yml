@@ -13,7 +13,7 @@ jobs:
           name-contains: "spacelift"
           description-contains: "Plan contains no changes"
         env:
-          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 #      - name: Add PR Label
 #        id: add-pr-label
 #        if: (! steps.dogfooding.outputs.no_changes) && (! steps.dogfooding.outputs.changes)
