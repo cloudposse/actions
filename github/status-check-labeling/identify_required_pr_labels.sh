@@ -4,9 +4,9 @@ set +e
 # We're starting with a pull request.
 PR_NUMBER=${GITHUB_EVENT_NUMBER}
 # Get the most recent commit on this pull request.
-#    -H "Authorization: token ${GITHUB_TOKEN}" \
 COMMIT_LOG_INFO=$(curl \
     -H "Accept: application/vnd.github.v3+json" \
+    -H "Authorization: token ${GITHUB_TOKEN}" \
     https://api.github.com/repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}/commits)
 MOST_RECENT_SHA=$(echo $COMMIT_LOG_INFO | jq .[-1].sha)
 MOST_RECENT_SHA_DIGEST=$(echo $MOST_RECENT_SHA | cut -c 2-8) # literal quotes in the string
