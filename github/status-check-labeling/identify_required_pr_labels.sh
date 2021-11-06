@@ -10,6 +10,8 @@ COMMIT_LOG_INFO=$(curl \
     https://api.github.com/repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}/commits)
 MOST_RECENT_SHA=$(echo $COMMIT_LOG_INFO | jq .[-1].sha)
 MOST_RECENT_SHA_DIGEST=$(echo $MOST_RECENT_SHA | cut -c -7) 
+echo "most_recent_sha: $MOST_RECENT_SHA"
+echo "most_recent_sha_digest: $MOST_RECENT_SHA_DIGEST"
 
 # start out assuming the label is not needed, since we don't yet know whether the checks of interest are even present
 LABEL_NEEDED=0
