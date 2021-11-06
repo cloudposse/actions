@@ -1,6 +1,6 @@
 name: dogfooding
-permissions:
-  issues: write
+#permissions:
+#  issues: write
 
 on:
   pull_request:
