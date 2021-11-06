@@ -4,21 +4,22 @@ set +e
 # We're starting with a pull request.
 PR_NUMBER=${GITHUB_EVENT_NUMBER}
 # Get the most recent commit on this pull request.
-MOST_RECENT_SHA=$(curl \
+COMMIT_LOG_INFO=$(curl \
     -H "Accept: application/vnd.github.v3+json" \
     -H "Authorization: token ${GITHUB_TOKEN}" \
-    https://api.github.com/repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}/commits | \
-    jq .[-1].sha)
+    https://api.github.com/repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}/commits)
+MOST_RECENT_SHA=$(echo $COMMIT_LOG_INFO | jq .[-1].sha)
 MOST_RECENT_SHA_DIGEST=$(echo $MOST_RECENT_SHA | cut -c -7) 
 
 # start out assuming the label is not needed, since we don't yet know whether the checks of interest are even present
 LABEL_NEEDED=0
 # get a list of all the check suites associated with this commit
-CHECK_SUITES=$(curl \
+CHECK_SUITES_INFO=$(curl \
     -H "Accept: application/vnd.github.v3+json" \
     -H "Authorization: token ${GITHUB_TOKEN}" \
-    https://api.github.com/repos/${GITHUB_REPOSITORY}/commits/${MOST_RECENT_SHA_DIGEST}/check-suites | jq .check_suites[].id)
-CHECK_SUITES_ARRAY=( $CHECK_SUITES )
+    https://api.github.com/repos/${GITHUB_REPOSITORY}/commits/${MOST_RECENT_SHA_DIGEST}/check-suites)
+CHECK_SUITES_NAMES=$(echo $CHECK_SUITES_INFO | jq .check_suites[].id)
+CHECK_SUITES_ARRAY=( $CHECK_SUITES_NAMES )
 # For each check suite, get the number of runs in that check suite
 for check_suite in "${CHECK_SUITES_ARRAY[@]}"; do
   echo "check_suite: $check_suite"
