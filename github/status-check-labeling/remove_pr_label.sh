@@ -12,6 +12,6 @@ echo "label: $LABEL"
 RESPONSE=$(curl \
   -X DELETE \
   -H "Accept: application/vnd.github.v3+json" \
-  -H "Authorization: access_token ${GITHUB_TOKEN}" \
+  -H "Authorization: token ${GITHUB_TOKEN}" \
   https://api.github.com/repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/labels/${LABEL})
 echo "response: $RESPONSE"
