@@ -49,7 +49,7 @@ for check_suite in "${CHECK_SUITES_ARRAY[@]}"; do
           echo "  Waiting for check to complete."
           CURRENT_STATUS=$(echo $CHECK_SUITE_INFO | jq .check_runs[${run_index}].status)
           echo "  current_status: $CURRENT_STATUS"
-          if [[ $CURRENT_STATUS != "completed" ]]; then
+          if [[ ${CURRENT_STATUS:1:-1} != "completed" ]]; then # account for quotation marks in the current_status field
             echo "    restarting PR check status checks"
             sleep 10
             continue 2
