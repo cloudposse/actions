@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: status-check-summaries
-        uses: cloudposse/github-action-status-check-labeling
+        uses: cloudposse/github-action-status-check-labeling@master
         #uses: cloudposse/actions/github/status-check-labeling@status-check-labeling
         with:
           label: "no-plan-changes"
