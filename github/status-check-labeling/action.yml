@@ -43,18 +43,18 @@ runs:
         GITHUB_TOKEN: ${{ inputs.github-token }}
         INPUTS_LABEL: ${{ inputs.label }}
 
-    - name: debugging
-      id: debugging
-      shell: bash
-      run: |
-        echo "pwd: $(pwd)"
-        ls -l .
-        echo "label_needed: $LABEL_NEEDED"
-        echo "label_present: $LABEL_PRESENT"
-      env:
-        LABEL_NEEDED: ${{ steps.identify-required-pr-labels.outputs.label_needed }}
-        LABEL_PRESENT: ${{ steps.determine-current-pr-labels.outputs.label_present }}
-
+#    - name: debugging
+#      id: debugging
+#      shell: bash
+#      run: |
+#        echo "pwd: $(pwd)"
+#        ls -l .
+#        echo "label_needed: $LABEL_NEEDED"
+#        echo "label_present: $LABEL_PRESENT"
+#      env:
+#        LABEL_NEEDED: ${{ steps.identify-required-pr-labels.outputs.label_needed }}
+#        LABEL_PRESENT: ${{ steps.determine-current-pr-labels.outputs.label_present }}
+#
 #        echo "github.action_path: ${{ github.action_path }}"
 #        ls -l ${{ github.action_path }} || true
 #        echo "GITHUB_ACTION_PATH: ${GITHUB_ACTION_PATH}"

@@ -4,7 +4,7 @@ set +e
 # Create the label of interest first, in case it doesn't already exist.
 CREATION_RESPONSE=$(curl \
   -X POST \
-  -d '{"name":"${LABEL}"}'
+  -d '{"name":"${LABEL}"}' \
   -H "Accept: application/vnd.github.v3+json" \
   -H "Authorization: token ${GITHUB_TOKEN}" \
   https://api.github.com/repos/${GITHUB_REPOSITORY}/labels)
@@ -15,7 +15,7 @@ echo "Adding PR label."
 PR_NUMBER=${GITHUB_EVENT_NUMBER}
 RESPONSE=$(curl \
   -X POST \
-  -d '{"labels":["${LABEL}"]}'
+  -d '{"labels":["${LABEL}"]}' \
   -H "Accept: application/vnd.github.v3+json" \
   -H "Authorization: token ${GITHUB_TOKEN}" \
   https://api.github.com/repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/labels)
