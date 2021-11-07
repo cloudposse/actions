@@ -14,11 +14,11 @@ NUMBER_OF_LABELS=$( echo "$PR_INFO" | jq '.labels | length' )
 if [ "$NUMBER_OF_LABELS" -gt "0" ]; then
   # show all labels, for debugging purposes
   echo "current labels:"
-  echo $PR_INFO | jq '.labels'
+  #echo $PR_INFO | jq '.labels'
   # grep for ${INPUTS_LABEL} in the labels list
   LAST_LABEL_INDEX=$(($NUMBER_OF_LABELS-1))
   for label_index in $(seq 0 $LAST_LABEL_INDEX); do
-    echo $PR_INFO | jq .labels[${label_index}].name
+    echo "  $($PR_INFO | jq .labels[${label_index}].name)"
     echo $PR_INFO | jq .labels[${label_index}].name | grep -q "${INPUTS_LABEL}"
     label_yn=$?
     # if label of interest is found in the labels list, set LABEL_PRESENT=1 and break the loop
