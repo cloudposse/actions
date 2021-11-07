@@ -39,10 +39,21 @@ for check_suite in "${CHECK_SUITES_ARRAY[@]}"; do
     for run_index in $(seq 0 $LAST_RUN_INDEX); do
       echo $CHECK_SUITE_INFO | jq .check_runs[${run_index}]
       echo $CHECK_SUITE_INFO | jq .check_runs[${run_index}].name | grep -q "${INPUTS_CHECK_NAME}"
-      # if "${{ inputs.check-name }}" is found in the run name,
-      # first set LABEL_NEEDED=1 (since we only potentially need a label when the relevant checks actuall took place),
-      # and then check this run's title for "${{ inputs.check-description }}" (when we might set LABEL_NEEDED back to 0)
+      # If "${{ inputs.check-name }}" is found in the run name:
+      # First, sit in a loop and wait for the check to finish.
+      # After that, begin evaluating LABEL_NEEDED:
+      #     Initially, set LABEL_NEEDED=1 (since we only potentially need a label when the relevant checks actuall took place),
+      #     and then check this run's title for "${{ inputs.check-description }}" (when we might set LABEL_NEEDED back to 0)
       if [[ "$?" -eq "0" ]]; then
+        # Unfortunately, we need to wait until the check is finished.
+        echo "Waiting for check to complete."
+        while [ $CURRENT_STATUS != "completed" ]; do
+          echo "waiting"
+          sleep 10
+          CURRENT_STATUS=$(echo $CHECK_SUITE_INFO | jq .check_runs[${run_index}].status)
+        done
+        echo "Check completed."
+        # Now that we're sure the check is complete, let's compute LABEL_NEEDED.
         LABEL_NEEDED=1
         echo "  Description check"
         echo $CHECK_SUITE_INFO | jq .check_runs[${run_index}].output.title | grep -q "${INPUTS_CHECK_DESCRIPTION}"
