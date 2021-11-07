@@ -3,7 +3,7 @@ set +e
 
 # Create the label of interest first, in case it doesn't already exist.
 creation_post_data="{\"name\":\"${LABEL}\"}"
-CREATION_RESPONSE=$(curl -s \
+CREATION_RESPONSE=$(curl -v \
   -X POST \
   -d "$creation_post_data" \
   -H "Accept: application/vnd.github.v3+json" \
@@ -15,7 +15,7 @@ echo "creation_response: $CREATION_RESPONSE"
 echo "Adding PR label."
 PR_NUMBER=${GITHUB_EVENT_NUMBER}
 addition_post_data="{\"labels\":[\"${LABEL}\"]}"
-RESPONSE=$(curl -s \
+RESPONSE=$(curl -v \
   -X POST \
   -d "$addition_post_data" \
   -H "Accept: application/vnd.github.v3+json" \
