@@ -4,7 +4,7 @@ set +e
 # We're starting with a pull request.
 PR_NUMBER=${GITHUB_EVENT_NUMBER}
 # Get the most recent commit on this pull request.
-COMMIT_LOG_INFO=$(curl \
+COMMIT_LOG_INFO=$(curl -s \
     -H "Accept: application/vnd.github.v3+json" \
     -H "Authorization: token ${GITHUB_TOKEN}" \
     https://api.github.com/repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}/commits)
@@ -16,7 +16,7 @@ echo "most_recent_sha_digest: $MOST_RECENT_SHA_DIGEST"
 # start out assuming the label is not needed, since we don't yet know whether the checks of interest are even present
 LABEL_NEEDED=0
 # get a list of all the check suites associated with this commit
-CHECK_SUITES_INFO=$(curl \
+CHECK_SUITES_INFO=$(curl -s \
     -H "Accept: application/vnd.github.v3+json" \
     -H "Authorization: token ${GITHUB_TOKEN}" \
     https://api.github.com/repos/${GITHUB_REPOSITORY}/commits/${MOST_RECENT_SHA_DIGEST}/check-suites)
@@ -26,7 +26,7 @@ CHECK_SUITES_ARRAY=( $CHECK_SUITES_NAMES )
 for check_suite in "${CHECK_SUITES_ARRAY[@]}"; do
   while :
   do
-    CHECK_SUITE_INFO=$(curl \
+    CHECK_SUITE_INFO=$(curl -s \
       -H "Accept: application/vnd.github.v3+json" \
       -H "Authorization: token ${GITHUB_TOKEN}" \
       https://api.github.com/repos/${GITHUB_REPOSITORY}/check-suites/${check_suite}/check-runs)
