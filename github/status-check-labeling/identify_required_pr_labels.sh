@@ -48,7 +48,7 @@ for check_suite in "${CHECK_SUITES_ARRAY[@]}"; do
         # Unfortunately, we need to wait until the check is finished.
         echo "Waiting for check to complete."
         echo "current_status: $CURRENT_STATUS"
-        while [ $CURRENT_STATUS != "completed" ]; do
+        while [[ $CURRENT_STATUS != "completed" ]]; do
           echo "waiting"
           sleep 10
           CURRENT_STATUS=$(echo $CHECK_SUITE_INFO | jq .check_runs[${run_index}].status)
