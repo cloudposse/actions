@@ -47,10 +47,12 @@ for check_suite in "${CHECK_SUITES_ARRAY[@]}"; do
       if [[ "$?" -eq "0" ]]; then
         # Unfortunately, we need to wait until the check is finished.
         echo "Waiting for check to complete."
-        while [ $CURRENT_STATUS != "completed" ]; do
+        echo "current_status: $CURRENT_STATUS"
+        while [ "$CURRENT_STATUS" != "completed" ]; do
           echo "waiting"
           sleep 10
           CURRENT_STATUS=$(echo $CHECK_SUITE_INFO | jq .check_runs[${run_index}].status)
+          echo "current_status: $CURRENT_STATUS"
         done
         echo "Check completed."
         # Now that we're sure the check is complete, let's compute LABEL_NEEDED.
