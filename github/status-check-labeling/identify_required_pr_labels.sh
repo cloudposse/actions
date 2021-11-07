@@ -43,15 +43,17 @@ for check_suite in "${CHECK_SUITES_ARRAY[@]}"; do
         #   Initially, set LABEL_NEEDED=1 (since we only potentially need a label when the relevant checks actually took place),
         #   and then check this run's title for "${{ inputs.check-description }}" (when we might set LABEL_NEEDED back to 0)
         if [[ "$?" -eq "0" ]]; then
+          echo "${INPUTS_CHECK_NAME} check found."
           # Unfortunately, we need to wait until the check is finished.
-          echo "Waiting for check to complete."
-          echo "current_status: $CURRENT_STATUS"
+          echo "  Waiting for check to complete."
+          CURRENT_STATUS=$(echo $CHECK_SUITE_INFO | jq .check_runs[${run_index}].status)
+          echo "  current_status: $CURRENT_STATUS"
           if [[ $CURRENT_STATUS != "completed" ]]; then
-            echo "waiting"
+            echo "    restarting PR check status checks"
             sleep 10
             continue
           fi
-          echo "Check completed."
+          echo "  Check completed."
           # Now that we're sure the check is complete, let's compute LABEL_NEEDED.
           LABEL_NEEDED=1
           echo "  Description check"
@@ -59,14 +61,14 @@ for check_suite in "${CHECK_SUITES_ARRAY[@]}"; do
           # if the desired phrase isn't found, set LABEL_NEEDED=0 again and exit all the nested loops
           phrase_found_yn=$?
           if [[ "$phrase_found_yn" -ne "0" ]]; then
-            echo "    check found without appropriate description - exiting!"
+            echo "    ${INPUTS_CHECK_NAME} check found without appropriate description - exiting!"
             LABEL_NEEDED=0
             break 3
           else
-            echo "    description found"
+            echo "    Desired description found."
           fi
         else
-          echo "  not a ${INPUTS_CHECK_NAME} check, moving on"
+          echo "  Not a ${INPUTS_CHECK_NAME} check. Moving on."
         fi
       done
     fi
