@@ -31,5 +31,6 @@ if [ "$NUMBER_OF_LABELS" -gt "0" ]; then
 fi
 
 # Now that we've determined whether the PR is already labeled, let's export that information
-echo "LABEL_PRESENT: $LABEL_PRESENT"
+echo "Label present: $LABEL_PRESENT"
+echo ""
 echo "::set-output name=label_present::${LABEL_PRESENT}"

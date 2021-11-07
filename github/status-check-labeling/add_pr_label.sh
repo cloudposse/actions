@@ -2,6 +2,7 @@
 set +e
 
 # Create the label of interest first, in case it doesn't already exist.
+echo "Attempting to create PR label."
 creation_post_data="{\"name\":\"${LABEL}\"}"
 echo "creation_post_data: $creation_post_data"
 CREATION_RESPONSE=$(curl \
