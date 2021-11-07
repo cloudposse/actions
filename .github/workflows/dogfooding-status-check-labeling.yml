@@ -1,6 +1,4 @@
 name: dogfooding
-#permissions:
-#  issues: write
 
 #on:
 #  pull_request:
