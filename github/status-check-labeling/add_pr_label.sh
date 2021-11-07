@@ -9,7 +9,6 @@ CREATION_RESPONSE=$(curl \
   -d "$creation_post_data" \
   -H "Accept: application/vnd.github.v3+json" \
   -H "Authorization: token ${GITHUB_TOKEN}" \
-  --trace-ascii \
   https://api.github.com/repos/${GITHUB_REPOSITORY}/labels)
 echo "creation_response: $CREATION_RESPONSE"
 
