@@ -52,7 +52,7 @@ for check_suite in "${CHECK_SUITES_ARRAY[@]}"; do
           if [[ $CURRENT_STATUS != "completed" ]]; then
             echo "    restarting PR check status checks"
             sleep 10
-            continue
+            continue 2
           fi
           echo "  Check completed."
           # Now that we're sure the check is complete, let's compute LABEL_NEEDED.
