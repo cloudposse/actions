@@ -5,7 +5,7 @@ set +e
 LABEL_PRESENT=0
 PR_NUMBER=${GITHUB_EVENT_NUMBER}
 # Get the number of labels.
-PR_INFO=$(curl \
+PR_INFO=$(curl -s \
     -H "Accept: application/vnd.github.v3+json" \
     -H "Authorization: token ${GITHUB_TOKEN}" \
     https://api.github.com/repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER})

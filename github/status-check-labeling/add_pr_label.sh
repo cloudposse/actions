@@ -2,7 +2,7 @@
 set +e
 
 # Create the label of interest first, in case it doesn't already exist.
-CREATION_RESPONSE=$(curl \
+CREATION_RESPONSE=$(curl -s \
   -X POST \
   -d '{"name":"${LABEL}"}' \
   -H "Accept: application/vnd.github.v3+json" \
@@ -13,7 +13,7 @@ echo "creation_response: $CREATION_RESPONSE"
 # We already know that the pull request should have the label of interest but doesn't. Let's rectify that.
 echo "Adding PR label."
 PR_NUMBER=${GITHUB_EVENT_NUMBER}
-RESPONSE=$(curl \
+RESPONSE=$(curl -s \
   -X POST \
   -d '{"labels":["${LABEL}"]}' \
   -H "Accept: application/vnd.github.v3+json" \
