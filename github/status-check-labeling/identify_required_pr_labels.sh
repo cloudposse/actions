@@ -24,7 +24,7 @@ CHECK_SUITES_NAMES=$(echo $CHECK_SUITES_INFO | jq .check_suites[].id)
 CHECK_SUITES_ARRAY=( $CHECK_SUITES_NAMES )
 # For each check suite, get the number of runs in that check suite
 for check_suite in "${CHECK_SUITES_ARRAY[@]}"; do
-  echo "check_suite: $check_suite"
+  #echo "check_suite: $check_suite"
   CHECK_SUITE_INFO=$(curl \
     -H "Accept: application/vnd.github.v3+json" \
     -H "Authorization: token ${GITHUB_TOKEN}" \
@@ -37,7 +37,7 @@ for check_suite in "${CHECK_SUITES_ARRAY[@]}"; do
     # grep for ${{ inputs.check-name }} in the run names
     LAST_RUN_INDEX=$(($NUMBER_OF_RUNS-1))
     for run_index in $(seq 0 $LAST_RUN_INDEX); do
-      echo $CHECK_SUITE_INFO | jq .check_runs[${run_index}]
+      #echo $CHECK_SUITE_INFO | jq .check_runs[${run_index}]
       echo $CHECK_SUITE_INFO | jq .check_runs[${run_index}].name | grep -q "${INPUTS_CHECK_NAME}"
       # If "${{ inputs.check-name }}" is found in the run name:
       # First, sit in a loop and wait for the check to finish.
