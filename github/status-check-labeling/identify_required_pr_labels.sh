@@ -36,6 +36,7 @@ for check_suite in "${CHECK_SUITES_ARRAY[@]}"; do
       # grep for ${{ inputs.check-name }} in the run names
       LAST_RUN_INDEX=$(($NUMBER_OF_RUNS-1))
       for run_index in $(seq 0 $LAST_RUN_INDEX); do
+        echo $CHECK_SUITE_INFO | jq .check_runs[${run_index}].name
         echo $CHECK_SUITE_INFO | jq .check_runs[${run_index}].name | grep -q "${INPUTS_CHECK_NAME}"
         # If "${{ inputs.check-name }}" is found in the run name:
         # First, see if the check has finished. If not, wait 10 seconds and restart the evaluation of this entire check suite.
