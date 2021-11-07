@@ -65,8 +65,7 @@ runs:
 
     - name: Add PR Label
       id: add-pr-label
-      if: 1
-      #if: (steps.identify-required-pr-labels.outputs.label_needed == 1) && (steps.determine-current-pr-labels.outputs.label_present == 0)
+      if: (steps.identify-required-pr-labels.outputs.label_needed == 1) && (steps.determine-current-pr-labels.outputs.label_present == 0)
       shell: bash
       run: ${{ github.action_path }}/add_pr_label.sh
       env:
