@@ -111,7 +111,6 @@ jobs:
           -context "test/readme"
           -description "Tests started by @${{ github.event.client_payload.github.actor }}"
           -url "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          -ref "${{ github.event.client_payload.pull_request.head.ref }}"
           -owner "${{ github.event.client_payload.github.payload.repository.owner.login }}"
       env:
         GITHUB_TOKEN: ${{ secrets.PUBLIC_REPO_ACCESS_TOKEN }}
@@ -148,7 +147,6 @@ jobs:
           -context "test/readme"
           -description "Tests failed"
           -url "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          -ref "${{ github.event.client_payload.pull_request.head.ref }}"
           -owner "${{ github.event.client_payload.github.payload.repository.owner.login }}"
       env:
         GITHUB_TOKEN: ${{ secrets.PUBLIC_REPO_ACCESS_TOKEN }}
@@ -165,7 +163,6 @@ jobs:
           -context "test/readme"
           -description "Tests passed"
           -url "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          -ref "${{ github.event.client_payload.pull_request.head.ref }}"
           -owner "${{ github.event.client_payload.github.payload.repository.owner.login }}"
       env:
         GITHUB_TOKEN: ${{ secrets.PUBLIC_REPO_ACCESS_TOKEN }}
@@ -183,7 +180,6 @@ jobs:
           -context "test/readme"
           -description "Tests cancelled"
           -url "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          -ref "${{ github.event.client_payload.pull_request.head.ref }}"
           -owner "${{ github.event.client_payload.github.payload.repository.owner.login }}"
       env:
         GITHUB_TOKEN: ${{ secrets.PUBLIC_REPO_ACCESS_TOKEN }}
@@ -209,7 +205,6 @@ jobs:
           -context "test/bats"
           -description "Tests started by @${{ github.event.client_payload.github.actor }}"
           -url "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          -ref "${{ github.event.client_payload.pull_request.head.ref }}"
           -owner "${{ github.event.client_payload.github.payload.repository.owner.login }}"
       env:
         GITHUB_TOKEN: ${{ secrets.PUBLIC_REPO_ACCESS_TOKEN }}
@@ -293,7 +288,6 @@ jobs:
           -context "test/bats"
           -description "Tests failed"
           -url "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          -ref "${{ github.event.client_payload.pull_request.head.ref }}"
           -owner "${{ github.event.client_payload.github.payload.repository.owner.login }}"
       env:
         GITHUB_TOKEN: ${{ secrets.PUBLIC_REPO_ACCESS_TOKEN }}
@@ -310,7 +304,6 @@ jobs:
           -context "test/bats"
           -description "Tests passed"
           -url "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          -ref "${{ github.event.client_payload.pull_request.head.ref }}"
           -owner "${{ github.event.client_payload.github.payload.repository.owner.login }}"
       env:
         GITHUB_TOKEN: ${{ secrets.PUBLIC_REPO_ACCESS_TOKEN }}
@@ -328,7 +321,6 @@ jobs:
           -context "test/bats"
           -description "Tests cancelled"
           -url "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          -ref "${{ github.event.client_payload.pull_request.head.ref }}"
           -owner "${{ github.event.client_payload.github.payload.repository.owner.login }}"
       env:
         GITHUB_TOKEN: ${{ secrets.PUBLIC_REPO_ACCESS_TOKEN }}
@@ -353,7 +345,6 @@ jobs:
           -context "test/terratest"
           -description "Tests started by @${{ github.event.client_payload.github.actor }}"
           -url "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          -ref "${{ github.event.client_payload.pull_request.head.ref }}"
           -owner "${{ github.event.client_payload.github.payload.repository.owner.login }}"
       env:
         GITHUB_TOKEN: ${{ secrets.PUBLIC_REPO_ACCESS_TOKEN }}
@@ -500,7 +491,6 @@ jobs:
           -context "test/terratest"
           -description "Tests failed"
           -url "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          -ref "${{ github.event.client_payload.pull_request.head.ref }}"
           -owner "${{ github.event.client_payload.github.payload.repository.owner.login }}"
       env:
         GITHUB_TOKEN: ${{ secrets.PUBLIC_REPO_ACCESS_TOKEN }}
@@ -517,7 +507,6 @@ jobs:
           -context "test/terratest"
           -description "Tests passed"
           -url "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          -ref "${{ github.event.client_payload.pull_request.head.ref }}"
           -owner "${{ github.event.client_payload.github.payload.repository.owner.login }}"
       env:
         GITHUB_TOKEN: ${{ secrets.PUBLIC_REPO_ACCESS_TOKEN }}
@@ -535,7 +524,6 @@ jobs:
           -context "test/terratest"
           -description "Tests cancelled"
           -url "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          -ref "${{ github.event.client_payload.pull_request.head.ref }}"
           -owner "${{ github.event.client_payload.github.payload.repository.owner.login }}"
       env:
         GITHUB_TOKEN: ${{ secrets.PUBLIC_REPO_ACCESS_TOKEN }}
