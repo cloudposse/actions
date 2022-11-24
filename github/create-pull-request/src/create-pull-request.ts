@@ -12,6 +12,7 @@ import * as utils from './utils'
 export interface Inputs {
   token: string
   path: string
+  addPaths: string[]
   commitMessage: string
   committer: string
   author: string
@@ -59,6 +60,9 @@ export async function createPullRequest(inputs: Inputs): Promise<void> {
       : baseRemote.repository
     if (inputs.pushToFork) {
       // Check if the supplied fork is really a fork of the base
+      core.info(
+        `Checking if '${branchRepository}' is a fork of '${baseRemote.repository}'`
+      )
       const parentRepository = await githubHelper.getRepositoryParent(
         branchRepository
       )
@@ -70,6 +74,7 @@ export async function createPullRequest(inputs: Inputs): Promise<void> {
       // Add a remote for the fork
       const remoteUrl = utils.getRemoteUrl(
         baseRemote.protocol,
+        baseRemote.hostname,
         branchRepository
       )
       await git.exec(['remote', 'add', 'fork', remoteUrl])
@@ -106,6 +111,12 @@ export async function createPullRequest(inputs: Inputs): Promise<void> {
         `The 'base' and 'branch' for a pull request must be different branches. Unable to continue.`
       )
     }
+    // For self-hosted runners the repository state persists between runs.
+    // This command prunes the stale remote ref when the pull request branch was
+    // deleted after being merged or closed. Without this the push using
+    // '--force-with-lease' fails due to "stale info."
+    // https://github.com/peter-evans/create-pull-request/issues/633
+    await git.exec(['remote', 'prune', branchRemoteName])
     core.endGroup()
 
     // Apply the branch suffix if set
@@ -167,7 +178,8 @@ export async function createPullRequest(inputs: Inputs): Promise<void> {
       inputs.base,
       inputs.branch,
       branchRemoteName,
-      inputs.signoff
+      inputs.signoff,
+      inputs.addPaths
     )
     core.endGroup()
 
@@ -189,11 +201,27 @@ export async function createPullRequest(inputs: Inputs): Promise<void> {
 
     if (result.hasDiffWithBase) {
       // Create or update the pull request
-      await githubHelper.createOrUpdatePullRequest(
+      core.startGroup('Create or update the pull request')
+      const pull = await githubHelper.createOrUpdatePullRequest(
         inputs,
         baseRemote.repository,
         branchRepository
       )
+      core.endGroup()
+
+      // Set outputs
+      core.startGroup('Setting outputs')
+      core.setOutput('pull-request-number', pull.number)
+      core.setOutput('pull-request-url', pull.html_url)
+      if (pull.created) {
+        core.setOutput('pull-request-operation', 'created')
+      } else if (result.action == 'updated') {
+        core.setOutput('pull-request-operation', 'updated')
+      }
+      core.setOutput('pull-request-head-sha', result.headSha)
+      // Deprecated
+      core.exportVariable('PULL_REQUEST_NUMBER', pull.number)
+      core.endGroup()
     } else {
       // There is no longer a diff with the base
       // Check we are in a state where a branch exists
@@ -209,11 +237,15 @@ export async function createPullRequest(inputs: Inputs): Promise<void> {
             branchRemoteName,
             `refs/heads/${inputs.branch}`
           ])
+          // Set outputs
+          core.startGroup('Setting outputs')
+          core.setOutput('pull-request-operation', 'closed')
+          core.endGroup()
         }
       }
     }
   } catch (error) {
-    core.setFailed(error.message)
+    core.setFailed(utils.getErrorMessage(error))
   } finally {
     // Remove auth and restore persisted auth config if it existed
     core.startGroup('Restore persisted git credentials')

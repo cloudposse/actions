@@ -10,7 +10,9 @@ When added, this action will run the following tasks on pull requests with the
 - Changes from the base branch will automatically be merged into the pull
   request (only when "Require branches to be up to date before merging"
   is enabled in the branch protection rules)
-- When the pull request is ready, it will automatically be merged
+- When the pull request is ready, it will automatically be merged. The action
+  will only wait for status checks that are marked as required in the branch
+  protection rules
 - Pull requests without any configured labels will be ignored
 
 Labels, merge and update strategies are configurable, see [Configuration](#configuration).
@@ -26,6 +28,10 @@ A pull request is considered ready when:
 After the pull request has been merged successfully, the branch will _not_ be
 deleted. To delete branches after they are merged,
 see [automatic deletion of branches](https://help.github.com/en/articles/managing-the-automatic-deletion-of-branches).
+
+----
+
+**This functionality is now available directly in GitHub as [auto-merge](https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/automatically-merging-a-pull-request).** Note that GitHub does not currently support auto-rebasing pull requests. The automerge-action project will still be maintained, but users are encouraged to switch to auto-merge for simple workflows, as it offers a faster and more stable experience.
 
 ## Usage
 
@@ -55,11 +61,14 @@ jobs:
   automerge:
     runs-on: ubuntu-latest
     steps:
-      - name: automerge
-        uses: "pascalgn/automerge-action@f81beb99aef41bb55ad072857d43073fba833a98"
+      - id: automerge
+        name: automerge
+        uses: "pascalgn/automerge-action@v0.15.5"
         env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
 ```
+
+For the latest version, see the [list of releases](https://github.com/pascalgn/automerge-action/releases).
 
 ## Configuration
 
@@ -137,9 +146,18 @@ The following merge options are supported:
   The default is `5000` (5 seconds) and setting it to `0` disables sleeping
   between retries.
 
+- `MERGE_REQUIRED_APPROVALS`: Count of required approvals. The default is `0`.
+
 - `MERGE_DELETE_BRANCH`: Automatic deletion of branches does not work for all
   repositories. Set this option to `true` to automatically delete branches
   after they have been merged. The default value is `false`.
+
+- `MERGE_DELETE_BRANCH_FILTER`: A comma-separated list of branches that will not
+  be deleted. This is not the list of GitHub's protected branches, which are never
+  deleted, but an additional list of branches to protect. The default value is `""`.
+
+- `MERGE_ERROR_FAIL`: Set this to `true` to have the action exit with error code `1`
+  when the pull request could not be merged successfully during a run.
 
 The following update options are supported:
 
@@ -187,6 +205,10 @@ Also, the following general options are supported:
   so make sure to add it as secret, not as environment variable, in the GitHub
   workflow file!
 
+- `PULL_REQUEST`: If provided, this action will attempt to merge the specified pull request. By default, it will attempt to use the pull request specified in the GitHub context. If a pull request number is provided via this input, this action will search in the current repo for the provided pull request number. If you want to merge a pull request in another repo, just provide the repo slug before the pull request number, like `Some-Org/Some-Repo/1234`
+
+- `BASE_BRANCHES`: If provided, the action will be restricted in terms of base branches. Can be comma-separated list of simple branch names (i.e `main,dev`).
+
 You can configure the environment variables in the workflow file like this:
 
 ```yaml
@@ -199,19 +221,65 @@ You can configure the environment variables in the workflow file like this:
           MERGE_FORKS: "false"
           MERGE_RETRIES: "6"
           MERGE_RETRY_SLEEP: "10000"
+          MERGE_REQUIRED_APPROVALS: "0"
           UPDATE_LABELS: ""
           UPDATE_METHOD: "rebase"
+          PULL_REQUEST: "1234"
+```
+
+## Supported Events
+
+Automerge can be configured to run for these events:
+
+* `check_run`
+* `check_suite`
+* `issue_comment`
+* `pull_request_review`
+* `pull_request_target`
+* `pull_request`
+* `push`
+* `repository_dispatch`
+* `schedule`
+* `status`
+* `workflow_dispatch`
+* `workflow_run`
+
+For more information on when these occur, see the Github documentation on [events that trigger workflows](https://docs.github.com/en/actions/reference/events-that-trigger-workflows) and [their payloads](https://docs.github.com/en/developers/webhooks-and-events/webhook-events-and-payloads).
+
+## Outputs
+
+The action will provide two [outputs](https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idoutputs):
+
+* `mergeResult` - The result from the action run, one of `skipped`, `not_ready`, `author_filtered`, `merge_failed`, `merged`
+* `pullRequestNumber` - The pull request number (or `0`, if no pull request was affected)
+
+Please note:
+
+1. When there are multiple pull requests affected, only the first one will be available in the output
+2. To access these outputs, your workflow configuration must define an `id` for the automerge-action step
+3. Unless a personal access token is used, this action will not trigger other actions, see [Limitations](#limitations)
+
+Example usage:
+
+```yaml
+    steps:
+      - id: automerge
+        name: automerge
+        uses: "pascalgn/automerge-action@v0.15.5"
+        env:
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+      - name: feedback
+        if: steps.automerge.outputs.mergeResult == "merged"
+        run: |
+          echo "Pull request ${{ steps.automerge.outputs.pullRequestNumber }} merged!"
 ```
 
 ## Limitations
 
 - When a pull request is merged by this action, the merge will not trigger other GitHub workflows.
   Similarly, when another GitHub workflow creates a pull request, this action will not be triggered.
-  This is because [an action in a workflow run can't trigger a new workflow run](https://help.github.com/en/actions/automating-your-workflow-with-github-actions/events-that-trigger-workflows).
+  This is because [an action in a workflow run can't trigger a new workflow run](https://help.github.com/en/actions/automating-your-workflow-with-github-actions/events-that-trigger-workflows). However, the [`workflow_run`](https://docs.github.com/en/free-pro-team@latest/actions/reference/events-that-trigger-workflows#workflow_run) event is triggered as expected.
 - When [using a personal access token (PAT) to work around the above limitation](https://help.github.com/en/actions/reference/events-that-trigger-workflows#triggering-new-workflows-using-a-personal-access-token), note that when the user issuing the PAT is an administrator and [branch restrictions do not include administrators](https://help.github.com/en/github/administering-a-repository/enabling-branch-restrictions), pull requests may be merged even if they are not mergeable for non-administrators (see [#65](https://github.com/pascalgn/automerge-action/issues/65)).
-- When a check from a build tools like Jenkins or CircleCI completes, GitHub
-  triggers the action workflow, but sometimes the pull request state is still
-  pending, blocking the merge. This is [an open issue](https://github.com/pascalgn/automerge-action/issues/7).
 - Currently, there is no way to trigger workflows when the pull request branch
   becomes out of date with the base branch. There is a request in the
   [GitHub community forum](https://github.community/t5/GitHub-Actions/New-Trigger-is-mergable-state/m-p/36908).
@@ -220,11 +288,12 @@ You can configure the environment variables in the workflow file like this:
 
 To run the action with full debug logging, update your workflow file as follows:
 
-```
+```yaml
       - name: automerge
         uses: pascalgn/automerge-action@...
-        with:
-          args: "--trace"
+        env:
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+          LOG: "TRACE"  # or "DEBUG"
 ```
 
 If you need to further debug the action, you can run it locally.
@@ -242,4 +311,4 @@ Install dependencies with `yarn`, and finally run `yarn it` (or `npm run it`).
 
 ## License
 
-[MIT](LICENSE)
+[MIT](./LICENSE)

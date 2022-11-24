@@ -1,4 +1,5 @@
 const { inspect } = require("util");
+const { readFileSync, existsSync } = require("fs");
 const core = require("@actions/core");
 const github = require("@actions/github");
 
@@ -38,7 +39,7 @@ async function addReactions(octokit, repo, comment_id, reactions) {
 
   let results = await Promise.allSettled(
     ReactionsSet.map(async (item) => {
-      await octokit.reactions.createForIssueComment({
+      await octokit.rest.reactions.createForIssueComment({
         owner: repo[0],
         repo: repo[1],
         comment_id: comment_id,
@@ -63,6 +64,16 @@ async function addReactions(octokit, repo, comment_id, reactions) {
   results = undefined;
 }
 
+function getBody(inputs) {
+  if (inputs.body) {
+    return inputs.body;
+  } else if (inputs.bodyFile) {
+    return readFileSync(inputs.bodyFile, 'utf-8');
+  } else {
+    return '';
+  }
+}
+
 async function run() {
   try {
     const inputs = {
@@ -71,6 +82,7 @@ async function run() {
       issueNumber: core.getInput("issue-number"),
       commentId: core.getInput("comment-id"),
       body: core.getInput("body"),
+      bodyFile: core.getInput("body-file"),
       editMode: core.getInput("edit-mode"),
       reactions: core.getInput("reactions")
         ? core.getInput("reactions")
@@ -91,20 +103,34 @@ async function run() {
       return;
     }
 
+    if (inputs.bodyFile && inputs.body) {
+      core.setFailed("Only one of 'body' or 'body-file' can be set.");
+      return;
+    }
+
+    if (inputs.bodyFile) {
+      if (!existsSync(inputs.bodyFile)) {
+        core.setFailed(`File '${inputs.bodyFile}' does not exist.`);
+        return;
+      }
+    }
+
+    const body = getBody(inputs);
+
     const octokit = github.getOctokit(inputs.token);
 
     if (inputs.commentId) {
       // Edit a comment
-      if (!inputs.body && !inputs.reactions) {
-        core.setFailed("Missing either comment 'body' or 'reactions'.");
+      if (!body && !inputs.reactions) {
+        core.setFailed("Missing comment 'body', 'body-file', or 'reactions'.");
         return;
       }
 
-      if (inputs.body) {
+      if (body) {
         var commentBody = "";
         if (editMode == "append") {
           // Get the comment body
-          const { data: comment } = await octokit.issues.getComment({
+          const { data: comment } = await octokit.rest.issues.getComment({
             owner: repo[0],
             repo: repo[1],
             comment_id: inputs.commentId,
@@ -112,9 +138,9 @@ async function run() {
           commentBody = comment.body + "\n";
         }
 
-        commentBody = commentBody + inputs.body;
+        commentBody = commentBody + body;
         core.debug(`Comment body: ${commentBody}`);
-        await octokit.issues.updateComment({
+        await octokit.rest.issues.updateComment({
           owner: repo[0],
           repo: repo[1],
           comment_id: inputs.commentId,
@@ -130,15 +156,16 @@ async function run() {
       }
     } else if (inputs.issueNumber) {
       // Create a comment
-      if (!inputs.body) {
-        core.setFailed("Missing comment 'body'.");
+      if (!body) {
+        core.setFailed("Missing comment 'body' or 'body-file'.");
         return;
       }
-      const { data: comment } = await octokit.issues.createComment({
+
+      const { data: comment } = await octokit.rest.issues.createComment({
         owner: repo[0],
         repo: repo[1],
         issue_number: inputs.issueNumber,
-        body: inputs.body,
+        body,
       });
       core.info(
         `Created comment id '${comment.id}' on issue '${inputs.issueNumber}'.`
@@ -156,6 +183,9 @@ async function run() {
   } catch (error) {
     core.debug(inspect(error));
     core.setFailed(error.message);
+    if (error.message == 'Resource not accessible by integration') {
+      core.error(`See this action's readme for details about this error`);
+    }
   }
 }
 

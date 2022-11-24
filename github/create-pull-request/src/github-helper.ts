@@ -1,6 +1,7 @@
 import * as core from '@actions/core'
 import {Inputs} from './create-pull-request'
 import {Octokit, OctokitOptions} from './octokit-client'
+import * as utils from './utils'
 
 const ERROR_PR_REVIEW_FROM_AUTHOR =
   'Review cannot be requested from pull request author'
@@ -13,6 +14,7 @@ interface Repository {
 interface Pull {
   number: number
   html_url: string
+  created: boolean
 }
 
 export class GitHubHelper {
@@ -23,6 +25,7 @@ export class GitHubHelper {
     if (token) {
       options.auth = `${token}`
     }
+    options.baseUrl = process.env['GITHUB_API_URL'] || 'https://api.github.com'
     this.octokit = new Octokit(options)
   }
 
@@ -37,11 +40,16 @@ export class GitHubHelper {
   private async createOrUpdate(
     inputs: Inputs,
     baseRepository: string,
-    headBranch: string
+    headRepository: string
   ): Promise<Pull> {
+    const [headOwner] = headRepository.split('/')
+    const headBranch = `${headOwner}:${inputs.branch}`
+    const headBranchFull = `${headRepository}:${inputs.branch}`
+
     // Try to create the pull request
     try {
-      const {data: pull} = await this.octokit.pulls.create({
+      core.info(`Attempting creation of pull request`)
+      const {data: pull} = await this.octokit.rest.pulls.create({
         ...this.parseRepository(baseRepository),
         title: inputs.title,
         head: headBranch,
@@ -54,42 +62,46 @@ export class GitHubHelper {
       )
       return {
         number: pull.number,
-        html_url: pull.html_url
+        html_url: pull.html_url,
+        created: true
       }
     } catch (e) {
       if (
-        !e.message ||
-        !e.message.includes(`A pull request already exists for ${headBranch}`)
+        utils.getErrorMessage(e).includes(`A pull request already exists for`)
       ) {
+        core.info(`A pull request already exists for ${headBranch}`)
+      } else {
         throw e
       }
     }
 
     // Update the pull request that exists for this branch and base
-    const {data: pulls} = await this.octokit.pulls.list({
+    core.info(`Fetching existing pull request`)
+    const {data: pulls} = await this.octokit.rest.pulls.list({
       ...this.parseRepository(baseRepository),
       state: 'open',
-      head: headBranch,
+      head: headBranchFull,
       base: inputs.base
     })
-    const {data: pull} = await this.octokit.pulls.update({
+    core.info(`Attempting update of pull request`)
+    const {data: pull} = await this.octokit.rest.pulls.update({
       ...this.parseRepository(baseRepository),
       pull_number: pulls[0].number,
       title: inputs.title,
-      body: inputs.body,
-      draft: inputs.draft
+      body: inputs.body
     })
     core.info(
       `Updated pull request #${pull.number} (${headBranch} => ${inputs.base})`
     )
     return {
       number: pull.number,
-      html_url: pull.html_url
+      html_url: pull.html_url,
+      created: false
     }
   }
 
   async getRepositoryParent(headRepository: string): Promise<string> {
-    const {data: headRepo} = await this.octokit.repos.get({
+    const {data: headRepo} = await this.octokit.rest.repos.get({
       ...this.parseRepository(headRepository)
     })
     if (!headRepo.parent) {
@@ -104,40 +116,39 @@ export class GitHubHelper {
     inputs: Inputs,
     baseRepository: string,
     headRepository: string
-  ): Promise<void> {
-    const [headOwner] = headRepository.split('/')
-    const headBranch = `${headOwner}:${inputs.branch}`
-
+  ): Promise<Pull> {
     // Create or update the pull request
-    const pull = await this.createOrUpdate(inputs, baseRepository, headBranch)
+    const pull = await this.createOrUpdate(
+      inputs,
+      baseRepository,
+      headRepository
+    )
 
-    // Set outputs
-    core.startGroup('Setting outputs')
-    core.setOutput('pull-request-number', pull.number)
-    core.setOutput('pull-request-url', pull.html_url)
-    // Deprecated
-    core.exportVariable('PULL_REQUEST_NUMBER', pull.number)
-    core.endGroup()
-
-    // Set milestone, labels and assignees
-    const updateIssueParams = {}
+    // Apply milestone
     if (inputs.milestone) {
-      updateIssueParams['milestone'] = inputs.milestone
       core.info(`Applying milestone '${inputs.milestone}'`)
-    }
-    if (inputs.labels.length > 0) {
-      updateIssueParams['labels'] = inputs.labels
-      core.info(`Applying labels '${inputs.labels}'`)
-    }
-    if (inputs.assignees.length > 0) {
-      updateIssueParams['assignees'] = inputs.assignees
-      core.info(`Applying assignees '${inputs.assignees}'`)
-    }
-    if (Object.keys(updateIssueParams).length > 0) {
-      await this.octokit.issues.update({
+      await this.octokit.rest.issues.update({
         ...this.parseRepository(baseRepository),
         issue_number: pull.number,
-        ...updateIssueParams
+        milestone: inputs.milestone
+      })
+    }
+    // Apply labels
+    if (inputs.labels.length > 0) {
+      core.info(`Applying labels '${inputs.labels}'`)
+      await this.octokit.rest.issues.addLabels({
+        ...this.parseRepository(baseRepository),
+        issue_number: pull.number,
+        labels: inputs.labels
+      })
+    }
+    // Apply assignees
+    if (inputs.assignees.length > 0) {
+      core.info(`Applying assignees '${inputs.assignees}'`)
+      await this.octokit.rest.issues.addAssignees({
+        ...this.parseRepository(baseRepository),
+        issue_number: pull.number,
+        assignees: inputs.assignees
       })
     }
 
@@ -153,18 +164,20 @@ export class GitHubHelper {
     }
     if (Object.keys(requestReviewersParams).length > 0) {
       try {
-        await this.octokit.pulls.requestReviewers({
+        await this.octokit.rest.pulls.requestReviewers({
           ...this.parseRepository(baseRepository),
           pull_number: pull.number,
           ...requestReviewersParams
         })
       } catch (e) {
-        if (e.message && e.message.includes(ERROR_PR_REVIEW_FROM_AUTHOR)) {
+        if (utils.getErrorMessage(e).includes(ERROR_PR_REVIEW_FROM_AUTHOR)) {
           core.warning(ERROR_PR_REVIEW_FROM_AUTHOR)
         } else {
           throw e
         }
       }
     }
+
+    return pull
   }
 }

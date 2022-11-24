@@ -1,29 +1,41 @@
+## Updating from `v2` to `v3`
+
+### Breaking changes
+
+- If using self-hosted runners or GitHub Enterprise Server, there are minimum requirements for `v4` to run. See "What's new" below for details.
+
+### What's new
+
+- Updated runtime to Node.js 16
+  - The action now requires a minimum version of v2.285.0 for the [Actions Runner](https://github.com/actions/runner/releases/tag/v2.285.0).
+  - If using GitHub Enterprise Server, the action requires [GHES 3.4](https://docs.github.com/en/enterprise-server@3.4/admin/release-notes) or later.
+
 ## Updating from `v1` to `v2`
 
 ### Breaking changes
 
 - The format of the `slash_command` context has been changed to prevent an issue where named arguments can overwrite other properties of the payload.
 
-  The following diff shows how the `slash_command` context has changed for the example command `/deploy branch=master smoke-test dry-run reason="new feature"`.
+  The following diff shows how the `slash_command` context has changed for the example command `/deploy branch=main smoke-test dry-run reason="new feature"`.
 
   ```diff
     "slash_command": {
         "command": "deploy",
-  -     "args": "branch=master smoke-test dry-run reason=\"new feature\"",
+  -     "args": "branch=main smoke-test dry-run reason=\"new feature\"",
   -     "unnamed_args": "smoke-test dry-run",
   -     "arg1": "smoke-test",
   -     "arg2": "dry-run"
-  -     "branch": "master",
+  -     "branch": "main",
   -     "reason": "new feature"
   +     "args": {
-  +         "all": "branch=master smoke-test dry-run reason=\"new feature\"",
+  +         "all": "branch=main smoke-test dry-run reason=\"new feature\"",
   +         "unnamed": {
   +             "all": "smoke-test dry-run",
   +             "arg1": "smoke-test",
   +             "arg2": "dry-run"
   +         },
   +         "named": {
-  +             "branch": "master",
+  +             "branch": "main",
   +             "reason": "new feature"
   +         },
   +     }
@@ -59,7 +71,7 @@
 
   e.g.
   ```
-  /deploy branch=master dry-run reason="new feature"
+  /deploy branch=main dry-run reason="new feature"
   ```
   ```
   /send "hello world!"

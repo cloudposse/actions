@@ -20,6 +20,7 @@ describe('handlePullRequest', () => {
         number: '1',
         pull_request: {
           number: 1,
+          labels: [],
           title: 'test',
           user: {
             login: 'pr-creator',
@@ -84,7 +85,11 @@ describe('handlePullRequest', () => {
     )
   })
 
-  test('skips drafts', async () => {
+  test.each`
+    runOnDraft
+    ${true}
+    ${false}
+  `('skips drafts', async ({ runOnDraft }) => {
     const spy = jest.spyOn(core, 'info')
 
     context.payload.pull_request.draft = true
@@ -96,13 +101,17 @@ describe('handlePullRequest', () => {
       numberOfReviewers: 0,
       reviewers: ['reviewer1', 'reviewer2', 'reviewer3'],
       skipKeywords: ['wip'],
+      runOnDraft,
     } as any
 
     await handler.handlePullRequest(client, context, config)
-
-    expect(spy.mock.calls[0][0]).toEqual(
-      'Skips the process to add reviewers/assignees since PR type is draft'
-    )
+    runOnDraft
+      ? expect(spy.mock.calls[0][0]).not.toEqual(
+          'Skips the process to add reviewers/assignees since PR type is draft'
+        )
+      : expect(spy.mock.calls[0][0]).toEqual(
+          'Skips the process to add reviewers/assignees since PR type is draft'
+        )
   })
 
   test('adds reviewers to pull requests if the configuration is enabled, but no assignees', async () => {
@@ -820,6 +829,75 @@ describe('handlePullRequest', () => {
     )
     expect(createReviewRequestSpy.mock.calls[0][0].reviewers[3]).toMatch(
       /group3-reviewer/
+    )
+  })
+
+  test('skips pull requests that do not have any of the filterLabels.include labels', async () => {
+    const spy = jest.spyOn(core, 'info')
+
+    const client = new github.GitHub('token')
+    const config = {
+      filterLabels: { include: ['test_label'] },
+    } as any
+
+    context.payload.pull_request.labels = [{ name: 'some_label' }]
+
+    await handler.handlePullRequest(client, context, config)
+
+    expect(spy.mock.calls[0][0]).toEqual(
+      'Skips the process to add reviewers/assignees since PR is not tagged with any of the filterLabels.include'
+    )
+  })
+
+  test('skips pull requests that have any of the filterLabels.exclude labels', async () => {
+    const spy = jest.spyOn(core, 'info')
+
+    const client = new github.GitHub('token')
+    const config = {
+      filterLabels: { include: ['test_label'], exclude: ['wip'] },
+    } as any
+
+    context.payload.pull_request.labels = [
+      { name: 'test_label' },
+      { name: 'wip' },
+    ]
+
+    await handler.handlePullRequest(client, context, config)
+
+    expect(spy.mock.calls[0][0]).toEqual(
+      'Skips the process to add reviewers/assignees since PR is tagged with any of the filterLabels.exclude'
+    )
+  })
+
+  test('adds reviewers to the pull request when it has any of the configured labels', async () => {
+    const config = {
+      addAssignees: false,
+      addReviewers: true,
+      filterLabels: { include: ['some_label', 'another_label'] },
+      numberOfReviewers: 0,
+      reviewers: ['reviewer1', 'reviewer2', 'reviewer3', 'pr-creator'],
+    } as any
+
+    const client = new github.GitHub('token')
+
+    context.payload.pull_request.labels = [{ name: 'some_label' }]
+
+    client.pulls = {
+      createReviewRequest: jest.fn().mockImplementation(async () => {}),
+    } as any
+
+    const addAssigneesSpy = jest.spyOn(client.issues, 'addAssignees')
+    const createReviewRequestSpy = jest.spyOn(
+      client.pulls,
+      'createReviewRequest'
+    )
+
+    await handler.handlePullRequest(client, context, config)
+
+    expect(addAssigneesSpy).not.toBeCalled()
+    expect(createReviewRequestSpy.mock.calls[0][0].reviewers).toHaveLength(3)
+    expect(createReviewRequestSpy.mock.calls[0][0].reviewers[0]).toMatch(
+      /reviewer/
     )
   })
 })

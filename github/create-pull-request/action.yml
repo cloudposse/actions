@@ -8,6 +8,11 @@ inputs:
     description: >
       Relative path under $GITHUB_WORKSPACE to the repository.
       Defaults to $GITHUB_WORKSPACE.
+  add-paths:
+    description: >
+      A comma or newline-separated list of file paths to commit.
+      Paths should follow git's pathspec syntax.
+      Defaults to adding all new and modified files.
   commit-message:
     description: 'The message to use when committing changes.'
     default: '[create-pull-request] automated change'
@@ -62,13 +67,19 @@ inputs:
   milestone:
     description: 'The number of the milestone to associate the pull request with.'
   draft:
-    description: 'Create a draft pull request'
+    description: 'Create a draft pull request. It is not possible to change draft status after creation except through the web interface'
     default: false
 outputs:
   pull-request-number:
     description: 'The pull request number'
+  pull-request-url:
+    description: 'The URL of the pull request.'
+  pull-request-operation:
+    description: 'The pull request operation performed by the action, `created`, `updated` or `closed`.'
+  pull-request-head-sha:
+    description: 'The commit SHA of the pull request branch.'
 runs:
-  using: 'node12'
+  using: 'node16'
   main: 'dist/index.js'
 branding:
   icon: 'git-pull-request'

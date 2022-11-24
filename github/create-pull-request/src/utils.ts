@@ -32,6 +32,7 @@ export function getRepoPath(relativePath?: string): string {
 }
 
 interface RemoteDetail {
+  hostname: string
   protocol: string
   repository: string
 }
@@ -39,12 +40,25 @@ interface RemoteDetail {
 export function getRemoteDetail(remoteUrl: string): RemoteDetail {
   // Parse the protocol and github repository from a URL
   // e.g. HTTPS, peter-evans/create-pull-request
-  const httpsUrlPattern = /^https:\/\/.*@?github.com\/(.+\/.+)$/i
-  const sshUrlPattern = /^git@github.com:(.+\/.+).git$/i
+  const githubUrl = process.env['GITHUB_SERVER_URL'] || 'https://github.com'
+
+  const githubServerMatch = githubUrl.match(/^https?:\/\/(.+)$/i)
+  if (!githubServerMatch) {
+    throw new Error('Could not parse GitHub Server name')
+  }
+
+  const hostname = githubServerMatch[1]
+
+  const httpsUrlPattern = new RegExp(
+    '^https?://.*@?' + hostname + '/(.+/.+?)(\\.git)?$',
+    'i'
+  )
+  const sshUrlPattern = new RegExp('^git@' + hostname + ':(.+/.+)\\.git$', 'i')
 
   const httpsMatch = remoteUrl.match(httpsUrlPattern)
   if (httpsMatch) {
     return {
+      hostname,
       protocol: 'HTTPS',
       repository: httpsMatch[1]
     }
@@ -53,6 +67,7 @@ export function getRemoteDetail(remoteUrl: string): RemoteDetail {
   const sshMatch = remoteUrl.match(sshUrlPattern)
   if (sshMatch) {
     return {
+      hostname,
       protocol: 'SSH',
       repository: sshMatch[1]
     }
@@ -63,10 +78,14 @@ export function getRemoteDetail(remoteUrl: string): RemoteDetail {
   )
 }
 
-export function getRemoteUrl(protocol: string, repository: string): string {
+export function getRemoteUrl(
+  protocol: string,
+  hostname: string,
+  repository: string
+): string {
   return protocol == 'HTTPS'
-    ? `https://github.com/${repository}`
-    : `git@github.com:${repository}.git`
+    ? `https://${hostname}/${repository}`
+    : `git@${hostname}:${repository}.git`
 }
 
 export function secondsSinceEpoch(): number {
@@ -122,12 +141,14 @@ export function fileExistsSync(path: string): boolean {
   try {
     stats = fs.statSync(path)
   } catch (error) {
-    if (error.code === 'ENOENT') {
+    if (hasErrorCode(error) && error.code === 'ENOENT') {
       return false
     }
 
     throw new Error(
-      `Encountered an error when checking whether path '${path}' exists: ${error.message}`
+      `Encountered an error when checking whether path '${path}' exists: ${getErrorMessage(
+        error
+      )}`
     )
   }
 
@@ -136,4 +157,14 @@ export function fileExistsSync(path: string): boolean {
   }
 
   return false
+}
+
+/* eslint-disable  @typescript-eslint/no-explicit-any */
+function hasErrorCode(error: any): error is {code: string} {
+  return typeof (error && error.code) === 'string'
+}
+
+export function getErrorMessage(error: unknown) {
+  if (error instanceof Error) return error.message
+  return String(error)
 }

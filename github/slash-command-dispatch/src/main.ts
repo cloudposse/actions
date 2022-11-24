@@ -151,10 +151,8 @@ async function run(): Promise<void> {
       clientPayload.github.payload.issue &&
       clientPayload.github.payload.issue.body
     ) {
-      clientPayload.github.payload.issue.body = clientPayload.github.payload.issue.body.slice(
-        0,
-        1000
-      )
+      clientPayload.github.payload.issue.body =
+        clientPayload.github.payload.issue.body.slice(0, 1000)
     }
 
     // Get the pull request context for the dispatch payload
@@ -191,12 +189,12 @@ async function run(): Promise<void> {
         commentId,
         'rocket'
       )
-  } catch (error) {
+  } catch (error: any) {
     core.debug(inspect(error))
     const message: string = error.message
     // Handle validation errors from workflow dispatch
     if (
-      message == 'Unexpected inputs provided' ||
+      message.startsWith('Unexpected inputs provided') ||
       (message.startsWith('Required input') &&
         message.endsWith('not provided')) ||
       message.startsWith('No ref found for:') ||

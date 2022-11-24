@@ -3,6 +3,7 @@ import * as fs from 'fs'
 import {GitCommandManager} from './git-command-manager'
 import * as path from 'path'
 import {URL} from 'url'
+import * as utils from './utils'
 
 export class GitAuthHelper {
   private git: GitCommandManager
@@ -34,7 +35,7 @@ export class GitAuthHelper {
         await this.setExtraheaderConfig(this.persistedExtraheaderConfigValue)
         core.info('Persisted git credentials restored')
       } catch (e) {
-        core.warning(e)
+        core.warning(utils.getErrorMessage(e))
       }
     }
   }

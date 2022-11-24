@@ -4,6 +4,7 @@ import {v4 as uuidv4} from 'uuid'
 
 const CHERRYPICK_EMPTY =
   'The previous cherry-pick is now empty, possibly due to conflict resolution.'
+const NOTHING_TO_COMMIT = 'nothing to commit, working tree clean'
 
 export enum WorkingBaseType {
   Branch = 'branch',
@@ -33,11 +34,26 @@ export async function tryFetch(
   branch: string
 ): Promise<boolean> {
   try {
-    await git.fetch([`${branch}:refs/remotes/${remote}/${branch}`], remote)
+    await git.fetch([`${branch}:refs/remotes/${remote}/${branch}`], remote, [
+      '--force'
+    ])
     return true
   } catch {
     return false
   }
+}
+
+// Return the number of commits that branch2 is ahead of branch1
+async function commitsAhead(
+  git: GitCommandManager,
+  branch1: string,
+  branch2: string
+): Promise<number> {
+  const result = await git.revList(
+    [`${branch1}...${branch2}`],
+    ['--right-only', '--count']
+  )
+  return Number(result)
 }
 
 // Return true if branch2 is ahead of branch1
@@ -46,11 +62,20 @@ async function isAhead(
   branch1: string,
   branch2: string
 ): Promise<boolean> {
+  return (await commitsAhead(git, branch1, branch2)) > 0
+}
+
+// Return the number of commits that branch2 is behind branch1
+async function commitsBehind(
+  git: GitCommandManager,
+  branch1: string,
+  branch2: string
+): Promise<number> {
   const result = await git.revList(
     [`${branch1}...${branch2}`],
-    ['--right-only', '--count']
+    ['--left-only', '--count']
   )
-  return Number(result) > 0
+  return Number(result)
 }
 
 // Return true if branch2 is behind branch1
@@ -59,11 +84,7 @@ async function isBehind(
   branch1: string,
   branch2: string
 ): Promise<boolean> {
-  const result = await git.revList(
-    [`${branch1}...${branch2}`],
-    ['--left-only', '--count']
-  )
-  return Number(result) > 0
+  return (await commitsBehind(git, branch1, branch2)) > 0
 }
 
 // Return true if branch2 is even with branch1
@@ -76,15 +97,6 @@ async function isEven(
     !(await isAhead(git, branch1, branch2)) &&
     !(await isBehind(git, branch1, branch2))
   )
-}
-
-async function hasDiff(
-  git: GitCommandManager,
-  branch1: string,
-  branch2: string
-): Promise<boolean> {
-  const result = await git.diff([`${branch1}..${branch2}`])
-  return result.length > 0
 }
 
 function splitLines(multilineString: string): string[] {
@@ -100,7 +112,8 @@ export async function createOrUpdateBranch(
   base: string,
   branch: string,
   branchRemoteName: string,
-  signoff: boolean
+  signoff: boolean,
+  addPaths: string[]
 ): Promise<CreateOrUpdateBranchResult> {
   // Get the working base.
   // When a ref, it may or may not be the actual base.
@@ -119,28 +132,56 @@ export async function createOrUpdateBranch(
   const result: CreateOrUpdateBranchResult = {
     action: 'none',
     base: base,
-    hasDiffWithBase: false
+    hasDiffWithBase: false,
+    headSha: ''
   }
 
   // Save the working base changes to a temporary branch
   const tempBranch = uuidv4()
   await git.checkout(tempBranch, 'HEAD')
   // Commit any uncommitted changes
-  if (await git.isDirty(true)) {
+  if (await git.isDirty(true, addPaths)) {
     core.info('Uncommitted changes found. Adding a commit.')
-    await git.exec(['add', '-A'])
-    const params = ['-m', commitMessage]
-    if (signoff) {
-      params.push('--signoff')
+    const aopts = ['add']
+    if (addPaths.length > 0) {
+      aopts.push(...['--', ...addPaths])
+    } else {
+      aopts.push('-A')
     }
-    await git.commit(params)
+    await git.exec(aopts, true)
+    const popts = ['-m', commitMessage]
+    if (signoff) {
+      popts.push('--signoff')
+    }
+    const commitResult = await git.commit(popts, true)
+    // 'nothing to commit' can occur when core.autocrlf is set to true
+    if (
+      commitResult.exitCode != 0 &&
+      !commitResult.stdout.includes(NOTHING_TO_COMMIT)
+    ) {
+      throw new Error(`Unexpected error: ${commitResult.stderr}`)
+    }
   }
+
+  // Remove uncommitted tracked and untracked changes
+  await git.exec(['reset', '--hard'])
+  await git.exec(['clean', '-f', '-d'])
 
   // Perform fetch and reset the working base
   // Commits made during the workflow will be removed
   if (workingBaseType == WorkingBaseType.Branch) {
-    core.info(`Resetting working base branch '${workingBase}' to its remote`)
-    await git.fetch([`${workingBase}:${workingBase}`], baseRemote, ['--force'])
+    core.info(`Resetting working base branch '${workingBase}'`)
+    if (branchRemoteName == 'fork') {
+      // If pushing to a fork we must fetch with 'unshallow' to avoid the following error on git push
+      // ! [remote rejected] HEAD -> tests/push-branch-to-fork (shallow update not allowed)
+      await git.fetch([`${workingBase}:${workingBase}`], baseRemote, [
+        '--force'
+      ])
+    } else {
+      // If the remote is 'origin' we can git reset
+      await git.checkout(workingBase)
+      await git.exec(['reset', '--hard', `${baseRemote}/${workingBase}`])
+    }
   }
 
   // If the working base is not the base, rebase the temp branch commits
@@ -177,7 +218,7 @@ export async function createOrUpdateBranch(
     // The pull request branch does not exist
     core.info(`Pull request branch '${branch}' does not exist yet.`)
     // Create the pull request branch
-    await git.checkout(branch, 'HEAD')
+    await git.checkout(branch, tempBranch)
     // Check if the pull request branch is ahead of the base
     result.hasDiffWithBase = await isAhead(git, base, branch)
     if (result.hasDiffWithBase) {
@@ -203,10 +244,16 @@ export async function createOrUpdateBranch(
     //   branches after merging. In particular, it catches a case where the branch was
     //   squash merged but not deleted. We need to reset to make sure it doesn't appear
     //   to have a diff with the base due to different commits for the same changes.
+    // - If the number of commits ahead of the base branch differs between the branch and
+    //   temp branch. This catches a case where the base branch has been force pushed to
+    //   a new commit.
     // For changes on base this reset is equivalent to a rebase of the pull request branch.
+    const tempBranchCommitsAhead = await commitsAhead(git, base, tempBranch)
+    const branchCommitsAhead = await commitsAhead(git, base, branch)
     if (
-      (await hasDiff(git, branch, tempBranch)) ||
-      !(await isAhead(git, base, tempBranch))
+      (await git.hasDiff([`${branch}..${tempBranch}`])) ||
+      branchCommitsAhead != tempBranchCommitsAhead ||
+      !(tempBranchCommitsAhead > 0) // !isAhead
     ) {
       core.info(`Resetting '${branch}'`)
       // Alternatively, git switch -C branch tempBranch
@@ -230,6 +277,9 @@ export async function createOrUpdateBranch(
     result.hasDiffWithBase = await isAhead(git, base, branch)
   }
 
+  // Get the pull request branch SHA
+  result.headSha = await git.revParse('HEAD')
+
   // Delete the temporary branch
   await git.exec(['branch', '--delete', '--force', tempBranch])
 
@@ -240,4 +290,5 @@ interface CreateOrUpdateBranchResult {
   action: string
   base: string
   hasDiffWithBase: boolean
+  headSha: string
 }

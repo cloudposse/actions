@@ -16,6 +16,7 @@ This document covers terminology, how the action works, general usage guidelines
   - [Push using SSH (deploy keys)](#push-using-ssh-deploy-keys)
   - [Push pull request branches to a fork](#push-pull-request-branches-to-a-fork)
   - [Authenticating with GitHub App generated tokens](#authenticating-with-github-app-generated-tokens)
+  - [GPG commit signature verification](#gpg-commit-signature-verification)
   - [Running in a container or on self-hosted runners](#running-in-a-container-or-on-self-hosted-runners)
 
 ## Terminology
@@ -35,7 +36,7 @@ For each [event type](https://docs.github.com/en/actions/reference/events-that-t
 The default can be overridden by specifying a `ref` on checkout.
 
 ```yml
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           ref: develop
 ```
@@ -72,7 +73,7 @@ jobs:
   example:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 ```
 
 There may be use cases where it makes sense to execute the workflow on a branch that is not the base of the pull request. In these cases, the base branch can be specified with the `base` action input. The action will attempt to rebase changes made during the workflow on to the actual base.
@@ -87,7 +88,7 @@ In these cases, you *must supply* the `base` input so the action can rebase chan
 Workflows triggered by [`pull_request`](https://docs.github.com/en/actions/reference/events-that-trigger-workflows#pull_request) events will by default check out a merge commit. Set the `base` input as follows to base the new pull request on the current pull request's branch.
 
 ```yml
-      - uses: peter-evans/create-pull-request@v3
+      - uses: peter-evans/create-pull-request@v4
         with:
           base: ${{ github.head_ref }}
 ```
@@ -95,9 +96,9 @@ Workflows triggered by [`pull_request`](https://docs.github.com/en/actions/refer
 Workflows triggered by [`release`](https://docs.github.com/en/actions/reference/events-that-trigger-workflows#release) events will by default check out a tag. For most use cases, you will need to set the `base` input to the branch name of the tagged commit.
 
 ```yml
-      - uses: peter-evans/create-pull-request@v3
+      - uses: peter-evans/create-pull-request@v4
         with:
-          base: master
+          base: main
 ```
 
 ### Restrictions on repository forks
@@ -129,19 +130,21 @@ jobs:
     if: github.event.pull_request.head.repo.full_name == github.repository
 ```
 
+For further reading regarding the security of pull requests, see this GitHub blog post titled [Keeping your GitHub Actions and workflows secure: Preventing pwn requests](https://securitylab.github.com/research/github-actions-preventing-pwn-requests/)
+
 ### Triggering further workflow runs
 
 Pull requests created by the action using the default `GITHUB_TOKEN` cannot trigger other workflows. If you have `on: pull_request` or `on: push` workflows acting as checks on pull requests, they will not run.
 
-> When you use the repository's GITHUB_TOKEN to perform tasks on behalf of the GitHub Actions app, events triggered by the GITHUB_TOKEN will not create a new workflow run.
+> When you use the repository's `GITHUB_TOKEN` to perform tasks, events triggered by the `GITHUB_TOKEN` will not create a new workflow run. This prevents you from accidentally creating recursive workflow runs. For example, if a workflow run pushes code using the repository's `GITHUB_TOKEN`, a new workflow will not run even when the repository contains a workflow configured to run when `push` events occur.
 
-[GitHub Actions: Events that trigger workflows](https://docs.github.com/en/actions/reference/events-that-trigger-workflows#triggering-new-workflows-using-a-personal-access-token)
+[GitHub Actions: Triggering a workflow from a workflow](https://docs.github.com/en/actions/using-workflows/triggering-a-workflow#triggering-a-workflow-from-a-workflow)
 
 #### Workarounds to trigger further workflow runs
 
 There are a number of workarounds with different pros and cons.
 
-- Use the default `GITHUB_TOKEN` and allow the action to create pull requests that have no checks enabled. Manually close pull requests and immediately reopen them. This will enable `on: pull_request` workflows to run and be added as checks.
+- Use the default `GITHUB_TOKEN` and allow the action to create pull requests that have no checks enabled. Manually close pull requests and immediately reopen them. This will enable `on: pull_request` workflows to run and be added as checks. To prevent merging of pull requests without checks erroneously, use [branch protection rules](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/defining-the-mergeability-of-pull-requests).
 
 - Use a `repo` scoped [Personal Access Token (PAT)](https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token) created on an account that has write access to the repository that pull requests are being created in. This is the standard workaround and [recommended by GitHub](https://docs.github.com/en/actions/reference/events-that-trigger-workflows#triggering-new-workflows-using-a-personal-access-token). However, the PAT cannot be scoped to a specific repository so the token becomes a very sensitive secret. If this is a concern, the PAT can instead be created for a dedicated [machine account](https://docs.github.com/en/github/site-policy/github-terms-of-service#3-account-requirements) that has collaborator access to the repository. Also note that because the account that owns the PAT will be the creator of pull requests, that user account will be unable to perform actions such as request changes or approve the pull request.
 
@@ -161,7 +164,7 @@ Alternatively, use the action directly and reference the commit hash for the ver
   - uses: thirdparty/foo-action@172ec762f2ac8e050062398456fccd30444f8f30
 ```
 
-This action uses [ncc](https://github.com/vercel/ncc) to compile the Node.js code and dependencies into a single JavaScript file under the [dist](https://github.com/peter-evans/create-pull-request/tree/master/dist) directory.
+This action uses [ncc](https://github.com/vercel/ncc) to compile the Node.js code and dependencies into a single JavaScript file under the [dist](https://github.com/peter-evans/create-pull-request/tree/main/dist) directory.
 
 ## Advanced usage
 
@@ -170,14 +173,14 @@ This action uses [ncc](https://github.com/vercel/ncc) to compile the Node.js cod
 Checking out a branch from a different repository from where the workflow is executing will make *that repository* the target for the created pull request. In this case, a `repo` scoped [Personal Access Token (PAT)](https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token) is required.
 
 ```yml
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           token: ${{ secrets.PAT }}
           repository: owner/repo
 
       # Make changes to pull request here
 
-      - uses: peter-evans/create-pull-request@v3
+      - uses: peter-evans/create-pull-request@v4
         with:
           token: ${{ secrets.PAT }}
 ```
@@ -197,22 +200,23 @@ How to use SSH (deploy keys) with create-pull-request action:
 
 ```yml
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
       # Make changes to pull request here
 
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v3
+        uses: peter-evans/create-pull-request@v4
 ```
 
 ### Push pull request branches to a fork
 
 Instead of pushing pull request branches to the repository you want to update, you can push them to a fork of that repository.
 This allows you to employ the [principle of least privilege](https://en.wikipedia.org/wiki/Principle_of_least_privilege) by using a dedicated user acting as a [machine account](https://docs.github.com/en/github/site-policy/github-terms-of-service#3-account-requirements).
-This user has no access to the main repository.
+This user only has `read` access to the main repository.
 It will use their own fork to push code and create the pull request.
+Note that if you choose to use this method (not give the machine account `write` access to the repository) the following inputs cannot be used: `labels`, `assignees`, `reviewers`, `team-reviewers` and `milestone`.
 
 1. Create a new GitHub user and login.
 2. Fork the repository that you will be creating pull requests in.
@@ -222,11 +226,11 @@ It will use their own fork to push code and create the pull request.
 6. As shown in the following example workflow, set the `push-to-fork` input to the full repository name of the fork.
 
 ```yaml
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       # Make changes to pull request here
 
-      - uses: peter-evans/create-pull-request@v3
+      - uses: peter-evans/create-pull-request@v4
         with:
           token: ${{ secrets.MACHINE_USER_PAT }}
           push-to-fork: machine-user/fork-of-repository
@@ -245,6 +249,8 @@ GitHub App generated tokens are more secure than using a PAT because GitHub App 
     - Uncheck `Active` under `Webhook`. You do not need to enter a `Webhook URL`.
     - Under `Repository permissions: Contents` select `Access: Read & write`.
     - Under `Repository permissions: Pull requests` select `Access: Read & write`.
+    - Under `Organization permissions: Members` select `Access: Read-only`.
+      - **NOTE**: Only needed if you would like add teams as reviewers to PRs.
 
 2. Create a Private key from the App settings page and store it securely.
 
@@ -256,7 +262,7 @@ GitHub App generated tokens are more secure than using a PAT because GitHub App 
 
 ```yaml
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - uses: tibdex/github-app-token@v1
         id: generate-token
@@ -267,9 +273,51 @@ GitHub App generated tokens are more secure than using a PAT because GitHub App 
       # Make changes to pull request here
 
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v3
+        uses: peter-evans/create-pull-request@v4
         with:
           token: ${{ steps.generate-token.outputs.token }}
+```
+
+### GPG commit signature verification
+
+The action can use GPG to sign commits with a GPG key that you generate yourself.
+
+1. Follow GitHub's guide to [generate a new GPG key](https://docs.github.com/en/github/authenticating-to-github/generating-a-new-gpg-key).
+
+2. [Add the public key](https://docs.github.com/en/github/authenticating-to-github/adding-a-new-gpg-key-to-your-github-account) to the user account associated with the [Personal Access Token (PAT)](https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token) that you will use with the action.
+
+3. Copy the private key to your clipboard, replacing `email@example.com` with the email address of your GPG key.
+   ```
+   # macOS
+   gpg --armor --export-secret-key email@example.com | pbcopy
+   ```
+
+4. Paste the private key into a repository secret where the workflow will run. e.g. `GPG_PRIVATE_KEY`
+
+5. Create another repository secret for the key's passphrase, if applicable. e.g. `GPG_PASSPHRASE`
+
+6. The following example workflow shows how to use [crazy-max/ghaction-import-gpg](https://github.com/crazy-max/ghaction-import-gpg) to import your GPG key and allow the action to sign commits.
+
+   Note that the `committer` email address *MUST* match the email address used to create your GPG key.
+
+```yaml
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: crazy-max/ghaction-import-gpg@v3
+        with:
+          gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
+          passphrase: ${{ secrets.GPG_PASSPHRASE }}
+          git-user-signingkey: true
+          git-commit-gpgsign: true
+
+      # Make changes to pull request here
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v4
+        with:
+          token: ${{ secrets.PAT }}
+          committer: example <email@example.com>
 ```
 
 ### Running in a container or on self-hosted runners
@@ -291,12 +339,12 @@ jobs:
       - name: Install dependencies
         run: apk --no-cache add git
 
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       # Make changes to pull request here
 
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v3
+        uses: peter-evans/create-pull-request@v4
 ```
 
 **Ubuntu container example:**
@@ -314,10 +362,10 @@ jobs:
           add-apt-repository -y ppa:git-core/ppa
           apt-get install -y git
 
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       # Make changes to pull request here
 
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v3
+        uses: peter-evans/create-pull-request@v4
 ```

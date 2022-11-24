@@ -32,6 +32,8 @@ export class GitCommandManager {
     } else {
       args.push(ref)
     }
+    // https://github.com/git/git/commit/a047fafc7866cc4087201e284dc1f53e8f9a32d5
+    args.push('--')
     await this.exec(args)
   }
 
@@ -51,7 +53,10 @@ export class GitCommandManager {
     return await this.exec(args, allowAllExitCodes)
   }
 
-  async commit(options?: string[]): Promise<void> {
+  async commit(
+    options?: string[],
+    allowAllExitCodes = false
+  ): Promise<GitOutput> {
     const args = ['commit']
     if (this.identityGitOptions) {
       args.unshift(...this.identityGitOptions)
@@ -61,7 +66,7 @@ export class GitCommandManager {
       args.push(...options)
     }
 
-    await this.exec(args)
+    return await this.exec(args, allowAllExitCodes)
   }
 
   async config(
@@ -94,15 +99,6 @@ export class GitCommandManager {
       true
     )
     return output.exitCode === 0
-  }
-
-  async diff(options?: string[]): Promise<string> {
-    const args = ['-c', 'core.pager=cat', 'diff']
-    if (options) {
-      args.push(...options)
-    }
-    const output = await this.exec(args)
-    return output.stdout.trim()
   }
 
   async fetch(
@@ -153,18 +149,31 @@ export class GitCommandManager {
     return this.workingDirectory
   }
 
-  async isDirty(untracked: boolean): Promise<boolean> {
-    const diffArgs = ['--abbrev=40', '--full-index', '--raw']
-    // Check staged changes
-    if (await this.diff([...diffArgs, '--staged'])) {
+  async hasDiff(options?: string[]): Promise<boolean> {
+    const args = ['diff', '--quiet']
+    if (options) {
+      args.push(...options)
+    }
+    const output = await this.exec(args, true)
+    return output.exitCode === 1
+  }
+
+  async isDirty(untracked: boolean, pathspec?: string[]): Promise<boolean> {
+    const pathspecArgs = pathspec ? ['--', ...pathspec] : []
+    // Check untracked changes
+    const sargs = ['--porcelain', '-unormal']
+    sargs.push(...pathspecArgs)
+    if (untracked && (await this.status(sargs))) {
       return true
     }
     // Check working index changes
-    if (await this.diff(diffArgs)) {
+    if (await this.hasDiff(pathspecArgs)) {
       return true
     }
-    // Check untracked changes
-    if (untracked && (await this.status(['--porcelain', '-unormal']))) {
+    // Check staged changes
+    const dargs = ['--staged']
+    dargs.push(...pathspecArgs)
+    if (await this.hasDiff(dargs)) {
       return true
     }
     return false

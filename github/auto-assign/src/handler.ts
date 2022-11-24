@@ -3,12 +3,17 @@ import * as github from '@actions/github'
 import { Context } from '@actions/github/lib/context'
 import * as utils from './utils'
 import { PullRequest } from './pull_request'
+import { PullRequestEvent } from '@octokit/webhooks-types'
 
 export interface Config {
   addReviewers: boolean
   addAssignees: boolean | string
   reviewers: string[]
   assignees: string[]
+  filterLabels?: {
+    include?: string[]
+    exclude?: string[]
+  }
   numberOfAssignees: number
   numberOfReviewers: number
   skipKeywords: string[]
@@ -16,6 +21,7 @@ export interface Config {
   useAssigneeGroups: boolean
   reviewGroups: { [key: string]: string[] }
   assigneeGroups: { [key: string]: string[] }
+  runOnDraft?: boolean
 }
 
 export async function handlePullRequest(
@@ -27,7 +33,8 @@ export async function handlePullRequest(
     throw new Error('the webhook payload is not exist')
   }
 
-  const { title, draft, user, number } = context.payload.pull_request
+  const { pull_request: event } = context.payload as PullRequestEvent
+  const { title, draft, user, number } = event
   const {
     skipKeywords,
     useReviewGroups,
@@ -36,6 +43,8 @@ export async function handlePullRequest(
     assigneeGroups,
     addReviewers,
     addAssignees,
+    filterLabels,
+    runOnDraft,
   } = config
 
   if (skipKeywords && utils.includesSkipKeywords(title, skipKeywords)) {
@@ -44,7 +53,7 @@ export async function handlePullRequest(
     )
     return
   }
-  if (draft) {
+  if (!runOnDraft && draft) {
     core.info(
       'Skips the process to add reviewers/assignees since PR type is draft'
     )
@@ -66,6 +75,28 @@ export async function handlePullRequest(
   const owner = user.login
   const pr = new PullRequest(client, context)
 
+  if (filterLabels !== undefined) {
+    if (filterLabels.include !== undefined && filterLabels.include.length > 0) {
+      const hasLabels = pr.hasAnyLabel(filterLabels.include)
+      if (!hasLabels) {
+        core.info(
+          'Skips the process to add reviewers/assignees since PR is not tagged with any of the filterLabels.include'
+        )
+        return
+      }
+    }
+
+    if (filterLabels.exclude !== undefined && filterLabels.exclude.length > 0) {
+      const hasLabels = pr.hasAnyLabel(filterLabels.exclude)
+      if (hasLabels) {
+        core.info(
+          'Skips the process to add reviewers/assignees since PR is tagged with any of the filterLabels.exclude'
+        )
+        return
+      }
+    }
+  }
+
   if (addReviewers) {
     try {
       const reviewers = utils.chooseReviewers(owner, config)
@@ -75,7 +106,9 @@ export async function handlePullRequest(
         core.info(`Added reviewers to PR #${number}: ${reviewers.join(', ')}`)
       }
     } catch (error) {
-      core.warning(error.message)
+      if (error instanceof Error) {
+        core.warning(error.message)
+      }
     }
   }
 
@@ -88,7 +121,9 @@ export async function handlePullRequest(
         core.info(`Added assignees to PR #${number}: ${assignees.join(', ')}`)
       }
     } catch (error) {
-      core.warning(error.message)
+      if (error instanceof Error) {
+        core.warning(error.message)
+      }
     }
   }
 }

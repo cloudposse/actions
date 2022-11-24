@@ -16,13 +16,13 @@ async function run(): Promise<void> {
 
     const octokit = github.getOctokit(inputs.token)
 
-    await octokit.repos.createDispatchEvent({
+    await octokit.rest.repos.createDispatchEvent({
       owner: owner,
       repo: repo,
       event_type: inputs.eventType,
       client_payload: JSON.parse(inputs.clientPayload)
     })
-  } catch (error) {
+  } catch (error: any) {
     core.debug(inspect(error))
     if (error.status == 404) {
       core.setFailed(

@@ -1,11 +1,22 @@
-const { logger, retry } = require("./common");
+const resolvePath = require("object-resolve-path");
+const {
+  RESULT_MERGED,
+  RESULT_MERGE_FAILED,
+  RESULT_AUTHOR_FILTERED,
+  RESULT_NOT_READY,
+  RESULT_SKIPPED,
+  logger,
+  retry
+} = require("./common");
 
 const MAYBE_READY = ["clean", "has_hooks", "unknown", "unstable"];
 const NOT_READY = ["dirty", "draft"];
 
-async function merge(context, pullRequest) {
-  if (skipPullRequest(context, pullRequest)) {
-    return false;
+const PR_PROPERTY = new RegExp("{pullRequest.([^}]+)}", "g");
+
+async function merge(context, pullRequest, approvalCount) {
+  if (skipPullRequest(context, pullRequest, approvalCount)) {
+    return RESULT_SKIPPED;
   }
 
   logger.info(`Merging PR #${pullRequest.number} ${pullRequest.title}`);
@@ -24,18 +35,14 @@ async function merge(context, pullRequest) {
       mergeFilterAuthor,
       mergeRemoveLabels,
       mergeRetries,
-      mergeRetrySleep
+      mergeRetrySleep,
+      mergeErrorFail
     }
   } = context;
 
-  const ready = await waitUntilReady(
-    octokit,
-    pullRequest,
-    mergeRetries,
-    mergeRetrySleep
-  );
+  const ready = await waitUntilReady(pullRequest, context);
   if (!ready) {
-    return false;
+    return RESULT_NOT_READY;
   }
 
   if (mergeCommitMessageRegex) {
@@ -52,7 +59,11 @@ async function merge(context, pullRequest) {
   }
 
   if (mergeFilterAuthor && pullRequest.user.login !== mergeFilterAuthor) {
-    return false;
+    logger.info(
+      `PR author '${pullRequest.user.login}' does not match filter:`,
+      mergeFilterAuthor
+    );
+    return RESULT_AUTHOR_FILTERED;
   }
 
   const commitMessage = getCommitMessage(mergeCommitMessage, pullRequest);
@@ -68,10 +79,11 @@ async function merge(context, pullRequest) {
     mergeMethod,
     mergeRetries,
     mergeRetrySleep,
+    mergeErrorFail,
     commitMessage
   );
   if (!merged) {
-    return false;
+    return RESULT_MERGE_FAILED;
   }
 
   logger.info("PR successfully merged!");
@@ -84,13 +96,17 @@ async function merge(context, pullRequest) {
 
   if (context.config.mergeDeleteBranch) {
     try {
-      await deleteBranch(octokit, pullRequest);
+      await deleteBranch(
+        octokit,
+        pullRequest,
+        context.config.mergeDeleteBranchFilter
+      );
     } catch (e) {
       logger.info("Failed to delete branch:", e.message);
     }
   }
 
-  return true;
+  return RESULT_MERGED;
 }
 
 async function removeLabels(octokit, pullRequest, mergeRemoveLabels) {
@@ -119,22 +135,38 @@ async function removeLabels(octokit, pullRequest, mergeRemoveLabels) {
   logger.info("Removed labels:", labelNames);
 }
 
-async function deleteBranch(octokit, pullRequest) {
+async function deleteBranch(octokit, pullRequest, mergeDeleteBranchFilter) {
   if (pullRequest.head.repo.full_name !== pullRequest.base.repo.full_name) {
     logger.info("Branch is from external repository, skipping delete");
     return;
   }
 
-  const { data: branch } = await octokit.repos.getBranch({
+  const branchQuery = {
     owner: pullRequest.head.repo.owner.login,
     repo: pullRequest.head.repo.name,
     branch: pullRequest.head.ref
-  });
+  };
+
+  const { data: branch } = await octokit.repos.getBranch(branchQuery);
 
   logger.trace("Branch:", branch);
 
   if (branch.protected) {
-    logger.info("Branch is protected and cannot be deleted:", branch.name);
+    const { data: protectionRules } = await octokit.repos.getBranchProtection(
+      branchQuery
+    );
+    if (
+      protectionRules.allow_deletions &&
+      !protectionRules.allow_deletions.enabled
+    ) {
+      logger.info("Branch is protected and cannot be deleted:", branch.name);
+      return;
+    }
+  } else if (mergeDeleteBranchFilter.includes(branch.name)) {
+    logger.info(
+      "Branch is in filter list and will not be deleted:",
+      branch.name
+    );
   } else {
     logger.debug("Deleting branch", branch.name, "...");
     await octokit.git.deleteRef({
@@ -142,18 +174,19 @@ async function deleteBranch(octokit, pullRequest) {
       repo: pullRequest.head.repo.name,
       ref: `heads/${branch.name}`
     });
-
     logger.info("Merged branch has been deleted:", branch.name);
   }
 }
 
-function skipPullRequest(context, pullRequest) {
+function skipPullRequest(context, pullRequest, approvalCount) {
   const {
     config: {
       mergeForks,
       mergeLabels,
+      mergeRequiredApprovals,
       mergeMethodLabelRequired,
-      mergeMethodLabels
+      mergeMethodLabels,
+      baseBranches
     }
   } = context;
 
@@ -192,6 +225,15 @@ function skipPullRequest(context, pullRequest) {
     }
   }
 
+  if (approvalCount < mergeRequiredApprovals) {
+    logger.info(
+      `Skipping PR merge, missing ${
+        mergeRequiredApprovals - approvalCount
+      } approvals`
+    );
+    skip = true;
+  }
+
   const numberMethodLabelsFound = mergeMethodLabels
     .map(lm => labels.includes(lm.label))
     .filter(x => x).length;
@@ -200,23 +242,47 @@ function skipPullRequest(context, pullRequest) {
     skip = true;
   }
 
+  if (
+    baseBranches &&
+    baseBranches.length &&
+    !baseBranches.some(branch => branch === pullRequest.base.ref)
+  ) {
+    logger.info(
+      "Skipping PR merge, base branch is not in the provided list:",
+      baseBranches
+    );
+    skip = true;
+  }
+
   return skip;
 }
 
-function waitUntilReady(octokit, pullRequest, mergeRetries, mergeRetrySleep) {
+function waitUntilReady(pullRequest, context) {
+  const {
+    octokit,
+    config: { mergeRetries, mergeRetrySleep, mergeErrorFail }
+  } = context;
+
   return retry(
     mergeRetries,
     mergeRetrySleep,
-    () => checkReady(pullRequest),
+    () => checkReady(pullRequest, context),
     async () => {
       const pr = await getPullRequest(octokit, pullRequest);
-      return checkReady(pr);
+      return checkReady(pr, context);
     },
-    () => logger.info(`PR not ready to be merged after ${mergeRetries} tries`)
+    () => failOrInfo(mergeRetries, mergeErrorFail)
   );
 }
 
-function checkReady(pullRequest) {
+function checkReady(pullRequest, context) {
+  if (skipPullRequest(context, pullRequest)) {
+    return "failure";
+  }
+  return mergeable(pullRequest);
+}
+
+function mergeable(pullRequest) {
   const { mergeable_state } = pullRequest;
   if (mergeable_state == null || MAYBE_READY.includes(mergeable_state)) {
     logger.info("PR is probably ready: mergeable_state:", mergeable_state);
@@ -235,7 +301,8 @@ async function getPullRequest(octokit, pullRequest) {
   const { data: pr } = await octokit.pulls.get({
     owner: pullRequest.base.repo.owner.login,
     repo: pullRequest.base.repo.name,
-    pull_number: pullRequest.number
+    pull_number: pullRequest.number,
+    headers: { "If-None-Match": "" }
   });
 
   logger.trace("PR:", pr);
@@ -250,6 +317,7 @@ function tryMerge(
   mergeMethod,
   mergeRetries,
   mergeRetrySleep,
+  mergeErrorFail,
   commitMessage
 ) {
   return retry(
@@ -270,8 +338,18 @@ function tryMerge(
         commitMessage
       );
     },
-    () => logger.info(`PR could not be merged after ${mergeRetries} tries`)
+    () => failOrInfo(mergeRetries, mergeErrorFail)
   );
+}
+
+function failOrInfo(mergeRetries, mergeErrorFail) {
+  const message = `PR not ready to be merged after ${mergeRetries} tries`;
+  if (mergeErrorFail) {
+    logger.error(message);
+    process.exit(1);
+  } else {
+    logger.info(message);
+  }
 }
 
 function getMergeMethod(defaultMergeMethod, mergeMethodLabels, pullRequest) {
@@ -302,15 +380,13 @@ function getCommitMessage(mergeCommitMessage, pullRequest) {
   } else if (mergeCommitMessage === "pull-request-description") {
     return pullRequest.body;
   } else if (mergeCommitMessage === "pull-request-title-and-description") {
-    return pullRequest.title + "\n\n" + pullRequest.body;
+    return (
+      pullRequest.title + (pullRequest.body ? "\n\n" + pullRequest.body : "")
+    );
   } else {
-    ["number", "title", "body"].forEach(prProp => {
-      mergeCommitMessage = mergeCommitMessage.replace(
-        new RegExp(`{pullRequest.${prProp}}`, "g"),
-        pullRequest[prProp]
-      );
-    });
-    return mergeCommitMessage;
+    return mergeCommitMessage.replace(PR_PROPERTY, (_, prProp) =>
+      resolvePath(pullRequest, prProp)
+    );
   }
 }
 
@@ -341,7 +417,8 @@ function checkMergeError(e) {
   const m = e ? e.message || "" : "";
   if (
     m.includes("review is required by reviewers with write access") ||
-    m.includes("reviews are required by reviewers with write access")
+    m.includes("reviews are required by reviewers with write access") ||
+    m.includes("API rate limit exceeded")
   ) {
     logger.info("Cannot merge PR:", m);
     return "failure";

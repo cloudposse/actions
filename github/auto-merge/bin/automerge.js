@@ -24,30 +24,28 @@ const OLD_CONFIG = [
 async function main() {
   const parser = new ArgumentParser({
     prog: pkg.name,
-    version: pkg.version,
-    addHelp: true,
+    add_help: true,
     description: pkg.description
   });
-  parser.addArgument(["-t", "--trace"], {
-    action: "storeTrue",
-    help: "Show trace output"
+  parser.add_argument("-v", "--version", {
+    action: "version",
+    version: pkg.version,
+    help: "Show version number and exit"
   });
-  parser.addArgument(["-d", "--debug"], {
-    action: "storeTrue",
-    help: "Show debugging output"
-  });
-  parser.addArgument(["url"], {
+  parser.add_argument("url", {
     metavar: "<url>",
     nargs: "?",
     help: "GitHub URL to process instead of environment variables"
   });
 
-  const args = parser.parseArgs();
+  const args = parser.parse_args();
 
-  if (args.trace) {
+  if (process.env.LOG === "TRACE") {
     logger.level = "trace";
-  } else if (args.debug) {
+  } else if (process.env.LOG === "DEBUG") {
     logger.level = "debug";
+  } else if (process.env.LOG && process.env.LOG.length > 0) {
+    logger.error("Invalid log level:", process.env.LOG);
   }
 
   checkOldConfig();
