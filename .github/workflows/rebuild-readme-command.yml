@@ -10,7 +10,7 @@ jobs:
       # Checkout the pull request branch
       - uses: actions/checkout@v2
         with:
-          token: ${{ secrets.PUBLIC_REPO_ACCESS_TOKEN }}
+          token: ${{ secrets.REPO_ACCESS_TOKEN }}
           repository: ${{ github.event.client_payload.pull_request.head.repo.full_name }}
           ref: ${{ github.event.client_payload.pull_request.head.ref }}
 
@@ -44,7 +44,7 @@ jobs:
       - name: Add reaction to the original comment
         uses: cloudposse/actions/github/create-or-update-comment@0.28.0
         with:
-          token: ${{ secrets.PUBLIC_REPO_ACCESS_TOKEN }}
+          token: ${{ secrets.REPO_ACCESS_TOKEN }}
           repository: ${{ github.event.client_payload.github.payload.repository.full_name }}
           comment-id: ${{ github.event.client_payload.github.payload.comment.id }}
           reactions: hooray
