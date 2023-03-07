@@ -20,6 +20,8 @@
 - [Misc workflow tips](#misc-workflow-tips)
   - [Filtering push events](#filtering-push-events)
   - [Dynamic configuration using variables](#dynamic-configuration-using-variables)
+  - [Setting the pull request body from a file](#setting-the-pull-request-body-from-a-file)
+  - [Using a markdown template](#using-a-markdown-template)
   - [Debugging GitHub Actions](#debugging-github-actions)
 
 
@@ -36,19 +38,19 @@ name: Update AUTHORS
 on:
   push:
     branches:
-      - master
+      - main
 jobs:
   updateAuthors:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - name: Update AUTHORS
         run: |
           git log --format='%aN <%aE>%n%cN <%cE>' | sort -u > AUTHORS
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v3
+        uses: peter-evans/create-pull-request@v4
         with:
           commit-message: update authors
           title: Update AUTHORS
@@ -60,27 +62,27 @@ jobs:
 
 This is a use case where a branch should be kept up to date with another by opening a pull request to update it. The pull request should then be updated with new changes until it is merged or closed.
 
-In this example scenario, a branch called `production` should be updated via pull request to keep it in sync with `master`. Merging the pull request is effectively promoting those changes to production.
+In this example scenario, a branch called `production` should be updated via pull request to keep it in sync with `main`. Merging the pull request is effectively promoting those changes to production.
 
 ```yml
 name: Create production promotion pull request
 on:
   push:
     branches:
-      - master
+      - main
 jobs:
   productionPromotion:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           ref: production
       - name: Reset promotion branch
         run: |
-          git fetch origin master:master
-          git reset --hard master
+          git fetch origin main:main
+          git reset --hard main
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v3
+        uses: peter-evans/create-pull-request@v4
         with:
           branch: production-promotion
 ```
@@ -94,7 +96,7 @@ This pattern will work well for updating any kind of static content based on the
 Raises a pull request to update the `CHANGELOG.md` file based on the tagged commit of the release.
 Note that [git-chglog](https://github.com/git-chglog/git-chglog/) requires some configuration files to exist in the repository before this workflow will work.
 
-This workflow assumes the tagged release was made on a default branch called `master`.
+This workflow assumes the tagged release was made on a default branch called `main`.
 
 ```yml
 name: Update Changelog
@@ -105,7 +107,7 @@ jobs:
   updateChangelog:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - name: Update Changelog
@@ -115,13 +117,13 @@ jobs:
           ./git-chglog -o CHANGELOG.md
           rm git-chglog
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v3
+        uses: peter-evans/create-pull-request@v4
         with:
           commit-message: update changelog
           title: Update Changelog
           body: Update changelog to reflect release changes
           branch: update-changelog
-          base: master
+          base: main
 ```
 
 ## Use case: Create a pull request to update X periodically
@@ -143,16 +145,16 @@ jobs:
   update-dep:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
         with:
-          node-version: '12.x'
+          node-version: '16.x'
       - name: Update dependencies
         run: |
           npx -p npm-check-updates ncu -u
           npm install
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v3
+        uses: peter-evans/create-pull-request@v4
         with:
             token: ${{ secrets.PAT }}
             commit-message: Update dependencies
@@ -172,17 +174,17 @@ The above workflow works best in combination with a build workflow triggered on 
 name: CI
 on:
   push:
-    branches: [master]
+    branches: [main]
   pull_request:
-    branches: [master]
+    branches: [main]
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
         with:
-          node-version: 12.x
+          node-version: 16.x
       - run: npm ci
       - run: npm run test
       - run: npm run build
@@ -203,16 +205,17 @@ jobs:
   update-dep:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-java@v1
+      - uses: actions/checkout@v3
+      - uses: actions/setup-java@v2
         with:
+          distribution: 'temurin'
           java-version: 1.8
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
       - name: Perform dependency resolution and write new lockfiles
         run: ./gradlew dependencies --write-locks
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v3
+        uses: peter-evans/create-pull-request@v4
         with:
             token: ${{ secrets.PAT }}
             commit-message: Update dependencies
@@ -240,14 +243,14 @@ jobs:
   update-dep:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Update dependencies
         run: |
           cargo install cargo-edit
           cargo update
           cargo upgrade --to-lockfile
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v3
+        uses: peter-evans/create-pull-request@v4
         with:
             token: ${{ secrets.PAT }}
             commit-message: Update dependencies
@@ -275,12 +278,14 @@ jobs:
   updateSwagger:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Get Latest Swagger UI Release
         id: swagger-ui
         run: |
-          echo ::set-output name=release_tag::$(curl -sL https://api.github.com/repos/swagger-api/swagger-ui/releases/latest | jq -r ".tag_name")
-          echo ::set-output name=current_tag::$(<swagger-ui.version)
+          release_tag=$(curl -sL https://api.github.com/repos/swagger-api/swagger-ui/releases/latest | jq -r ".tag_name")
+          echo "release_tag=$release_tag" >> $GITHUB_OUTPUT
+          current_tag=$(<swagger-ui.version)
+          echo "current_tag=$current_tag" >> $GITHUB_OUTPUT
       - name: Update Swagger UI
         if: steps.swagger-ui.outputs.current_tag != steps.swagger-ui.outputs.release_tag
         env:
@@ -303,7 +308,7 @@ jobs:
           # Update current release
           echo ${{ steps.swagger-ui.outputs.release_tag }} > swagger-ui.version
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v3
+        uses: peter-evans/create-pull-request@v4
         with:
           commit-message: Update swagger-ui to ${{ steps.swagger-ui.outputs.release_tag }}
           title: Update SwaggerUI to ${{ steps.swagger-ui.outputs.release_tag }}
@@ -323,7 +328,7 @@ jobs:
 This example is designed to be run in a seperate repository from the fork repository itself.
 The aim of this is to prevent committing anything to the fork's default branch would cause it to differ from the upstream.
 
-In the following example workflow, `owner/repo` is the upstream repository and `fork-owner/repo` is the fork. It assumes the default branch of the upstream repository is called `master`.
+In the following example workflow, `owner/repo` is the upstream repository and `fork-owner/repo` is the fork. It assumes the default branch of the upstream repository is called `main`.
 
 The [Personal Access Token (PAT)](https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token) should have `repo` scope. Additionally, if the upstream makes changes to the `.github/workflows` directory, the action will be unable to push the changes to a branch and throw the error "_(refusing to allow a GitHub App to create or update workflow `.github/workflows/xxx.yml` without `workflows` permission)_". To allow these changes to be pushed to the fork, add the `workflow` scope to the PAT. Of course, allowing this comes with the risk that the workflow changes from the upstream could run and do something unexpected. Disabling GitHub Actions in the fork is highly recommended to prevent this.
 
@@ -338,16 +343,16 @@ jobs:
   updateFork:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           repository: fork-owner/repo
       - name: Reset the default branch with upstream changes
         run: |
           git remote add upstream https://github.com/owner/repo.git
-          git fetch upstream master:upstream-master
-          git reset --hard upstream-master
+          git fetch upstream main:upstream-main
+          git reset --hard upstream-main
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v3
+        uses: peter-evans/create-pull-request@v4
         with:
           token: ${{ secrets.PAT }}
           branch: upstream-changes
@@ -366,7 +371,7 @@ jobs:
   format:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Download website
         run: |
           wget \
@@ -380,7 +385,7 @@ jobs:
             --domains quotes.toscrape.com \
             http://quotes.toscrape.com/
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v3
+        uses: peter-evans/create-pull-request@v4
         with:
           commit-message: update local website copy
           title: Automated Updates to Local Website Copy
@@ -425,7 +430,7 @@ An `on: repository_dispatch` workflow can be triggered from another workflow wit
 
 ```yml
 - name: Repository Dispatch
-  uses: peter-evans/repository-dispatch@v1
+  uses: peter-evans/repository-dispatch@v2
   with:
     token: ${{ secrets.REPO_ACCESS_TOKEN }}
     repository: username/my-repo
@@ -462,7 +467,7 @@ jobs:
     if: startsWith(github.head_ref, 'autopep8-patches') == false && github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           ref: ${{ github.head_ref }}
       - name: autopep8
@@ -472,10 +477,12 @@ jobs:
           args: --exit-code --recursive --in-place --aggressive --aggressive .
       - name: Set autopep8 branch name
         id: vars
-        run: echo ::set-output name=branch-name::"autopep8-patches/${{ github.head_ref }}"
+        run: |
+          branch-name="autopep8-patches/${{ github.head_ref }}"
+          echo "branch-name=$branch-name" >> $GITHUB_OUTPUT
       - name: Create Pull Request
         if: steps.autopep8.outputs.exit-code == 2
-        uses: peter-evans/create-pull-request@v3
+        uses: peter-evans/create-pull-request@v4
         with:
           commit-message: autopep8 action fixes
           title: Fixes by autopep8 action
@@ -509,31 +516,32 @@ jobs:
     if: startsWith(github.ref, 'refs/heads/')
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       ...
 
   someOtherJob:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       ...
 ```
 
 ### Dynamic configuration using variables
 
 The following examples show how configuration for the action can be dynamically defined in a previous workflow step.
-
-The recommended method is to use [`set-output`](https://docs.github.com/en/actions/reference/workflow-commands-for-github-actions#setting-an-output-parameter). Note that the step where output variables are defined must have an id.
+Note that the step where output variables are defined must have an id.
 
 ```yml
       - name: Set output variables
         id: vars
         run: |
-          echo ::set-output name=pr_title::"[Test] Add report file $(date +%d-%m-%Y)"
-          echo ::set-output name=pr_body::"This PR was auto-generated on $(date +%d-%m-%Y) \
+          pr_title="[Test] Add report file $(date +%d-%m-%Y)"
+          pr_body="This PR was auto-generated on $(date +%d-%m-%Y) \
             by [create-pull-request](https://github.com/peter-evans/create-pull-request)."
+          echo "pr_title=$pr_title" >> $GITHUB_OUTPUT
+          echo "pr_body=$pr_body" >> $GITHUB_OUTPUT
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v3
+        uses: peter-evans/create-pull-request@v4
         with:
           title: ${{ steps.vars.outputs.pr_title }}
           body: ${{ steps.vars.outputs.pr_body }}
@@ -542,21 +550,45 @@ The recommended method is to use [`set-output`](https://docs.github.com/en/actio
 ### Setting the pull request body from a file
 
 This example shows how file content can be read into a variable and passed to the action.
-The content must be [escaped to preserve newlines](https://github.community/t/set-output-truncates-multiline-strings/16852/3).
 
 ```yml
       - id: get-pr-body
         run: |
           body=$(cat pr-body.txt)
-          body="${body//'%'/'%25'}"
-          body="${body//$'\n'/'%0A'}"
-          body="${body//$'\r'/'%0D'}" 
-          echo ::set-output name=body::$body
+          delimiter="$(openssl rand -hex 8)"
+          echo "body<<$delimiter" >> $GITHUB_OUTPUT
+          echo "$body" >> $GITHUB_OUTPUT
+          echo "$delimiter" >> $GITHUB_OUTPUT
 
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v3
+        uses: peter-evans/create-pull-request@v4
         with:
           body: ${{ steps.get-pr-body.outputs.body }}
+```
+
+### Using a markdown template
+
+In this example, a markdown template file is added to the repository at `.github/pull-request-template.md` with the following content.
+```
+This is a test pull request template
+Render template variables such as {{ .foo }} and {{ .bar }}.
+```
+
+The template is rendered using the [render-template](https://github.com/chuhlomin/render-template) action and the result is used to create the pull request.
+```yml
+      - name: Render template
+        id: template
+        uses: chuhlomin/render-template@v1.4
+        with:
+          template: .github/pull-request-template.md
+          vars: |
+            foo: this
+            bar: that
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v4
+        with:
+          body: ${{ steps.template.outputs.result }}
 ```
 
 ### Debugging GitHub Actions

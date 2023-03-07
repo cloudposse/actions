@@ -50,6 +50,30 @@ describe('utils tests', () => {
     )
     expect(remote3.protocol).toEqual('SSH')
     expect(remote3.repository).toEqual('peter-evans/create-pull-request')
+
+    const remote4 = utils.getRemoteDetail(
+      'https://github.com/peter-evans/create-pull-request.git'
+    )
+    expect(remote4.protocol).toEqual('HTTPS')
+    expect(remote4.repository).toEqual('peter-evans/create-pull-request')
+
+    const remote5 = utils.getRemoteDetail(
+      'https://github.com/peter-evans/ungit'
+    )
+    expect(remote5.protocol).toEqual('HTTPS')
+    expect(remote5.repository).toEqual('peter-evans/ungit')
+
+    const remote6 = utils.getRemoteDetail(
+      'https://github.com/peter-evans/ungit.git'
+    )
+    expect(remote6.protocol).toEqual('HTTPS')
+    expect(remote6.repository).toEqual('peter-evans/ungit')
+
+    const remote7 = utils.getRemoteDetail(
+      'git@github.com:peter-evans/ungit.git'
+    )
+    expect(remote7.protocol).toEqual('SSH')
+    expect(remote7.repository).toEqual('peter-evans/ungit')
   })
 
   test('getRemoteDetail fails to parse a remote URL', async () => {
@@ -58,7 +82,7 @@ describe('utils tests', () => {
       utils.getRemoteDetail(remoteUrl)
       // Fail the test if an error wasn't thrown
       expect(true).toEqual(false)
-    } catch (e) {
+    } catch (e: any) {
       expect(e.message).toEqual(
         `The format of '${remoteUrl}' is not a valid GitHub repository URL`
       )
@@ -66,11 +90,28 @@ describe('utils tests', () => {
   })
 
   test('getRemoteUrl successfully returns remote URLs', async () => {
-    const url1 = utils.getRemoteUrl('HTTPS', 'peter-evans/create-pull-request')
+    const url1 = utils.getRemoteUrl(
+      'HTTPS',
+      'github.com',
+      'peter-evans/create-pull-request'
+    )
     expect(url1).toEqual('https://github.com/peter-evans/create-pull-request')
 
-    const url2 = utils.getRemoteUrl('SSH', 'peter-evans/create-pull-request')
+    const url2 = utils.getRemoteUrl(
+      'SSH',
+      'github.com',
+      'peter-evans/create-pull-request'
+    )
     expect(url2).toEqual('git@github.com:peter-evans/create-pull-request.git')
+
+    const url3 = utils.getRemoteUrl(
+      'HTTPS',
+      'mygithubserver.com',
+      'peter-evans/create-pull-request'
+    )
+    expect(url3).toEqual(
+      'https://mygithubserver.com/peter-evans/create-pull-request'
+    )
   })
 
   test('secondsSinceEpoch returns the number of seconds since the Epoch', async () => {
@@ -104,7 +145,7 @@ describe('utils tests', () => {
       utils.parseDisplayNameEmail(displayNameEmail1)
       // Fail the test if an error wasn't thrown
       expect(true).toEqual(false)
-    } catch (e) {
+    } catch (e: any) {
       expect(e.message).toEqual(
         `The format of '${displayNameEmail1}' is not a valid email address with display name`
       )
@@ -115,7 +156,7 @@ describe('utils tests', () => {
       utils.parseDisplayNameEmail(displayNameEmail2)
       // Fail the test if an error wasn't thrown
       expect(true).toEqual(false)
-    } catch (e) {
+    } catch (e: any) {
       expect(e.message).toEqual(
         `The format of '${displayNameEmail2}' is not a valid email address with display name`
       )

@@ -36,7 +36,7 @@ See it in action with the following live demos.
 - [Standard configuration](#standard-configuration)
 - [Advanced configuration](docs/advanced-configuration.md)
 - [Workflow dispatch](docs/workflow-dispatch.md)
-- [Updating to v2](docs/updating.md)
+- [Updating to v3](docs/updating.md)
 
 ## Dispatching commands
 
@@ -54,7 +54,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Slash Command Dispatch
-        uses: peter-evans/slash-command-dispatch@v2
+        uses: peter-evans/slash-command-dispatch@v3
         with:
           token: ${{ secrets.PAT }}
           commands: |
@@ -91,6 +91,9 @@ This action creates [repository_dispatch](https://docs.github.com/en/actions/ref
 The default `GITHUB_TOKEN` does not have scopes to create these events, so a `repo` scoped [PAT](https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token) is required.
 If you will be dispatching commands to public repositories *only* then you can use the more limited `public_repo` scope.
 
+When using the action in a GitHub organization, the user the PAT is created on must be a member of the organization.
+Additionally, the PAT should be given the `org:read` scope.
+
 #### `reaction-token`
 
 If you don't specify a token for `reaction-token` it will use the default `GITHUB_TOKEN`.
@@ -99,7 +102,7 @@ You can use a [PAT](https://docs.github.com/en/github/authenticating-to-github/c
 
 ```yml
       - name: Slash Command Dispatch
-        uses: peter-evans/slash-command-dispatch@v2
+        uses: peter-evans/slash-command-dispatch@v3
         with:
           token: ${{ secrets.PAT }}
           reaction-token: ${{ secrets.PAT }}
@@ -119,6 +122,8 @@ Setting `write` as the required permission level means that any user with `write
 
 Note that `read`, `triage` and `maintain` are only applicable to organization repositories.
 For repositories owned by a user account there are only two permission levels, the repository owner (`admin`) and collaborators (`write`).
+
+There is a known issue with permissions when using [nested teams](https://docs.github.com/en/organizations/organizing-members-into-teams/about-teams#nested-teams) in a GitHub organization. See [here](https://github.com/peter-evans/slash-command-dispatch/issues/120) for further details.
 
 #### `dispatch-type`
 
@@ -173,7 +178,7 @@ It will also contain any static arguments if configured.
 
 To demonstrate, take the following configuration as an example.
 ```yml
-      - uses: peter-evans/slash-command-dispatch@v2
+      - uses: peter-evans/slash-command-dispatch@v3
         with:
           token: ${{ secrets.PAT }}
           commands: |
@@ -183,13 +188,13 @@ To demonstrate, take the following configuration as an example.
             region=us-east-1
 ```
 
-For the above example configuration, the slash command `/deploy branch=master dry-run reason="new feature"` will be converted to a JSON payload as follows.
+For the above example configuration, the slash command `/deploy branch=main dry-run reason="new feature"` will be converted to a JSON payload as follows.
 
 ```json
     "slash_command": {
         "command": "deploy",
         "args": {
-            "all": "production region=us-east-1 branch=master dry-run reason=\"new feature\"",
+            "all": "production region=us-east-1 branch=main dry-run reason=\"new feature\"",
             "unnamed": {
                 "all": "production dry-run",
                 "arg1": "production",
@@ -197,7 +202,7 @@ For the above example configuration, the slash command `/deploy branch=master dr
             },
             "named": {
                 "region": "us-east-1",
-                "branch": "master",
+                "branch": "main",
                 "reason": "new feature"
             },
         }
@@ -243,7 +248,7 @@ The simplest response is to add a :tada: reaction to the comment.
 
 ```yml
       - name: Add reaction
-        uses: peter-evans/create-or-update-comment@v1
+        uses: peter-evans/create-or-update-comment@v2
         with:
           token: ${{ secrets.PAT }}
           repository: ${{ github.event.client_payload.github.payload.repository.full_name }}
@@ -259,7 +264,7 @@ Another option is to reply with a new comment containing a link to the run outpu
         run: echo ::set-output name=run-url::https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID
 
       - name: Create comment
-        uses: peter-evans/create-or-update-comment@v1
+        uses: peter-evans/create-or-update-comment@v2
         with:
           token: ${{ secrets.PAT }}
           repository: ${{ github.event.client_payload.github.payload.repository.full_name }}

@@ -12,13 +12,13 @@ jobs:
         run: |
           repository=${{ github.event.client_payload.slash_command.repository }}
           if [[ -z "$repository" ]]; then repository=${{ github.repository }}; fi
-          echo ::set-output name=repository::$repository
+          echo "repository=$repository" >> $GITHUB_OUTPUT
           branch=${{ github.event.client_payload.slash_command.branch }}
-          if [[ -z "$branch" ]]; then branch="master"; fi
-          echo ::set-output name=branch::$branch
+          if [[ -z "$branch" ]]; then branch="main"; fi
+          echo "branch=$branch" >> $GITHUB_OUTPUT
 
       # Checkout the branch to test
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           repository: ${{ steps.vars.outputs.repository }}
           ref: ${{ steps.vars.outputs.branch }}
@@ -54,8 +54,31 @@ jobs:
           reactions: heart, hooray, laugh
 
       - name: Add reaction
-        uses: peter-evans/create-or-update-comment@v1
+        uses: peter-evans/create-or-update-comment@v2
         with:
           repository: ${{ github.event.client_payload.github.payload.repository.full_name }}
           comment-id: ${{ github.event.client_payload.github.payload.comment.id }}
           reactions: hooray
+
+      # Test create with body from file
+      - name: Create comment
+        uses: ./
+        with:
+          issue-number: 1
+          body-file: .github/comment-body.md
+
+      # Test create from template
+      - name: Render template
+        id: template
+        uses: chuhlomin/render-template@v1.6
+        with:
+          template: .github/comment-template.md
+          vars: |
+            foo: this
+            bar: that
+
+      - name: Create comment
+        uses: ./
+        with:
+          issue-number: 1
+          body: ${{ steps.template.outputs.result }}

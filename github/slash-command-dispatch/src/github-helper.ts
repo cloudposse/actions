@@ -1,11 +1,5 @@
 import * as core from '@actions/core'
-import {
-  graphql,
-  Graphql,
-  Octokit,
-  OctokitOptions,
-  PullsGetResponseData
-} from './octokit-client'
+import {Octokit, PullsGetResponseData} from './octokit-client'
 import {Command, SlashCommandPayload} from './command-helper'
 import {inspect} from 'util'
 
@@ -44,18 +38,11 @@ type CollaboratorPermission = {
 
 export class GitHubHelper {
   private octokit: InstanceType<typeof Octokit>
-  private graphqlClient: Graphql
 
   constructor(token: string) {
-    const options: OctokitOptions = {}
-    if (token) {
-      options.auth = `${token}`
-    }
-    this.octokit = new Octokit(options)
-    this.graphqlClient = graphql.defaults({
-      headers: {
-        authorization: `token ${token}`
-      }
+    this.octokit = new Octokit({
+      auth: token,
+      baseUrl: process.env['GITHUB_API_URL'] || 'https://api.github.com'
     })
   }
 
@@ -80,12 +67,11 @@ export class GitHubHelper {
         }
       }
     }`
-    const collaboratorPermission = await this.graphqlClient<
-      CollaboratorPermission
-    >(query, {
-      ...repo,
-      collaborator: actor
-    })
+    const collaboratorPermission =
+      await this.octokit.graphql<CollaboratorPermission>(query, {
+        ...repo,
+        collaborator: actor
+      })
     core.debug(
       `CollaboratorPermission: ${inspect(
         collaboratorPermission.repository.collaborators.edges
@@ -110,12 +96,12 @@ export class GitHubHelper {
       | 'eyes'
   ): Promise<void> {
     try {
-      await this.octokit.reactions.createForIssueComment({
+      await this.octokit.rest.reactions.createForIssueComment({
         ...repo,
         comment_id: commentId,
         content: reaction
       })
-    } catch (error) {
+    } catch (error: any) {
       core.debug(error)
       core.warning(`Failed to set reaction on comment ID ${commentId}.`)
     }
@@ -125,7 +111,7 @@ export class GitHubHelper {
     repo: Repository,
     pullNumber: number
   ): Promise<PullsGetResponseData> {
-    const {data: pullRequest} = await this.octokit.pulls.get({
+    const {data: pullRequest} = await this.octokit.rest.pulls.get({
       ...repo,
       pull_number: pullNumber
     })
@@ -148,7 +134,7 @@ export class GitHubHelper {
     clientPayload: ClientPayload
   ): Promise<void> {
     const eventType = `${cmd.command}${cmd.event_type_suffix}`
-    await this.octokit.repos.createDispatchEvent({
+    await this.octokit.rest.repos.createDispatchEvent({
       ...this.parseRepository(cmd.repository),
       event_type: `${cmd.command}${cmd.event_type_suffix}`,
       client_payload: clientPayload
@@ -195,7 +181,7 @@ export class GitHubHelper {
   }
 
   private async getDefaultBranch(repository: string): Promise<string> {
-    const {data: repo} = await this.octokit.repos.get({
+    const {data: repo} = await this.octokit.rest.repos.get({
       ...this.parseRepository(repository)
     })
     return repo.default_branch

@@ -1,8 +1,8 @@
-name: "Merge pull requests"
+name: "Merge pull requests (automerge-action)"
 description: "Automatically merge pull requests that are ready"
 runs:
-  using: "docker"
-  image: "Dockerfile"
+  using: "node16"
+  main: "dist/index.js"
 branding:
   icon: "git-pull-request"
   color: "blue"

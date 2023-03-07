@@ -16,9 +16,11 @@ async function main() {
   const config = createConfig({
     UPDATE_LABELS: "it-update",
     MERGE_LABELS: "it-merge",
+    MERGE_REQUIRED_APPROVALS: "0",
     MERGE_REMOVE_LABELS: "it-merge",
     MERGE_RETRIES: "3",
-    MERGE_RETRY_SLEEP: "2000"
+    MERGE_RETRY_SLEEP: "2000",
+    MERGE_ERROR_FAIL: "true"
   });
 
   const context = { token, octokit, config };

@@ -4,12 +4,13 @@ author: 'Kentaro Matsushita'
 inputs:
   repo-token:
     description: 'A token for the repo'
-    required: true
+    default: ${{ github.token }}
+    required: false
   configuration-path:
     description: 'A path for the auto-assign configuration'
     default: '.github/auto_assign.yml'
 runs:
-  using: 'node12'
+  using: 'node16'
   main: 'dist/index.js'
 branding:
   icon: 'user-plus'
