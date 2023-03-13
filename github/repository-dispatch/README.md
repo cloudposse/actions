@@ -6,15 +6,8 @@ A GitHub action to create a repository dispatch event.
 
 ## Usage
 
-Dispatch an event to the current repository by elivating the permissions of the default `GITHUB_TOKEN`.
+Dispatch an event to the current repository.
 ```yml
-permissions:
-  actions: write
-
-jobs:
-  repositorydispatch:
-    runs-on: ubuntu-latest
-    steps:
       - name: Repository Dispatch
         uses: peter-evans/repository-dispatch@v2
         with:
@@ -26,7 +19,7 @@ Dispatch an event to a remote repository using a `repo` scoped [Personal Access 
       - name: Repository Dispatch
         uses: peter-evans/repository-dispatch@v2
         with:
-          token: ${{ secrets.REPO_ACCESS_TOKEN }}
+          token: ${{ secrets.PAT }}
           event-type: my-event
 ```
 
@@ -34,7 +27,7 @@ Dispatch an event to a remote repository using a `repo` scoped [Personal Access 
 
 | Name | Description | Default |
 | --- | --- | --- |
-| `token` | (**required**) `GITHUB_TOKEN` (permissions `actions: write`) or a `repo` scoped [Personal Access Token (PAT)](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token). See [token](#token) for further details. | `GITHUB_TOKEN` |
+| `token` | `GITHUB_TOKEN` (permissions `contents: write`) or a `repo` scoped [Personal Access Token (PAT)](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token). See [token](#token) for further details. | `GITHUB_TOKEN` |
 | `repository` | The full name of the repository to send the dispatch. | `github.repository` (current repository) |
 | `event-type` | (**required**) A custom webhook event name. | |
 | `client-payload` | JSON payload with extra information about the webhook event that your action or workflow may use. | `{}` |
@@ -43,12 +36,6 @@ Dispatch an event to a remote repository using a `repo` scoped [Personal Access 
 
 This action creates [`repository_dispatch`](https://docs.github.com/en/rest/repos/repos#create-a-repository-dispatch-event) events.
 The default `GITHUB_TOKEN` token can only be used if you are dispatching the same repository that the workflow is executing in.
-In this case you must [elevate the token permissions](https://docs.github.com/en/actions/using-jobs/assigning-permissions-to-jobs) to allow the dispatch.
-
-```yaml
-permissions:
-  actions: write
-```
 
 To dispatch to a remote repository you must create a [Personal Access Token (PAT)](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token) with the `repo` scope and store it as a secret.
 If you will be dispatching to a public repository then you can use the more limited `public_repo` scope.
@@ -61,7 +48,7 @@ Here is an example setting all of the input parameters.
       - name: Repository Dispatch
         uses: peter-evans/repository-dispatch@v2
         with:
-          token: ${{ secrets.REPO_ACCESS_TOKEN }}
+          token: ${{ secrets.PAT }}
           repository: username/my-repo
           event-type: my-event
           client-payload: '{"ref": "${{ github.ref }}", "sha": "${{ github.sha }}"}'
@@ -104,7 +91,7 @@ jobs:
       - name: Repository Dispatch
         uses: peter-evans/repository-dispatch@v2
         with:
-          token: ${{ secrets.REPO_ACCESS_TOKEN }}
+          token: ${{ secrets.PAT }}
           repository: ${{ matrix.repo }}
           event-type: my-event
 ```
