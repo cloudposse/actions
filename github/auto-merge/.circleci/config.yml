@@ -1,0 +1,10 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: cimg/node:16.13.1
+    steps:
+      - checkout
+      - run:
+          name: yarn
+          command: yarn
