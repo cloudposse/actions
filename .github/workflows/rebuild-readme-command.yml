@@ -1,3 +1,4 @@
+# TODO deprecate
 name: Rebuild README
 on:
   repository_dispatch:

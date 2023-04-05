@@ -1,3 +1,4 @@
+# TODO deprecate
 name: test
 on:
   repository_dispatch:
