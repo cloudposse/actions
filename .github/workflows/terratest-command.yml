@@ -1,7 +1,7 @@
-name: terraform-test
+name: terratest
 on:
   repository_dispatch:
-    types: [terraform-test-command]
+    types: [terratest-command]
 
 defaults:
   run:
