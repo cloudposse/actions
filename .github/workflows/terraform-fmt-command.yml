@@ -1,3 +1,4 @@
+# TODO deprecate by adding a deprecation message back to PR
 name: Format terraform files
 on:
   repository_dispatch:
