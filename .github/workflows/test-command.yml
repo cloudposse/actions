@@ -50,7 +50,7 @@ jobs:
           done
         fi
         for out in REACTION "${COMMANDS[@]}"; do
-          printf "::set-output name=%s::%s\n" "${out,,}" "${!out:-false}"
+          printf "name=%s=%s\n" "${out,,}" "${!out:-false}" >> $GITHUB_OUTPUT
           printf "%s=%s\n" "${out,,}" "${!out:-false}"
         done
 
