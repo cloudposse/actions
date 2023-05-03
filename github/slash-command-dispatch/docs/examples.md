@@ -264,7 +264,7 @@ jobs:
       # Execute black in check mode
       - name: Black
         id: black
-        run: echo 'format=$(black --check --quiet . || echo "true")' >> $GITHUB_OUTPUT
+        run: echo "format=$(black --check --quiet . || echo "true")" >> $GITHUB_OUTPUT
 
       # Execute black and commit the change to the PR branch
       - name: Commit to the PR branch
