@@ -20,7 +20,7 @@
 
   To continue to use the `v2` default, set the `author` input as follows.
   ```yaml
-      - uses: peter-evans/create-pull-request@v3
+      - uses: peter-evans/create-pull-request@v6
         with:
           author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
   ```
@@ -39,7 +39,7 @@
 
       # Make changes to pull request here
 
-      - uses: peter-evans/create-pull-request@v3
+      - uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.MACHINE_USER_PAT }}
           push-to-fork: machine-user/fork-of-repository
