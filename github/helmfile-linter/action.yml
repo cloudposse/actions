@@ -1,0 +1,9 @@
+name: 'Helmfile Linter'
+description: 'Check All Helmfiles for Errors'
+author: 'Cloud Posse <hello@cloudposse.com>'
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+branding:
+  icon: 'activity'
+  color: 'blue'

@@ -1,0 +1,28 @@
+descriptor_id: PUPPET
+descriptor_type: tooling_format
+file_extensions:
+  - ".pp"
+linters:
+  # PuppetLint
+  - linter_name: puppet-lint
+    linter_url: http://puppet-lint.com/
+    linter_repo: https://github.com/rodjek/puppet-lint
+    linter_rules_url: http://puppet-lint.com/checks/
+    linter_rules_configuration_url: https://github.com/rodjek/puppet-lint#configuration-file
+    linter_rules_inline_disable_url: http://puppet-lint.com/controlcomments/
+    config_file_name: .puppet-lint.rc
+    cli_config_arg_name: ""
+    cli_lint_fix_arg_name: "--fix"
+    cli_lint_extra_args:
+      - "--fail-on-warnings"
+      - "--no-autoloader_layout-check"
+    examples:
+      - "puppet-lint --fail-on-warnings --no-autoloader_layout-check myfile.pp"
+      - "puppet-lint --fail-on-warnings --no-autoloader_layout-check --fix myfile.pp"
+    install:
+      gem:
+        - puppet-lint
+    ide:
+      vscode:
+        - name: Puppet VsCode Extension
+          url: https://puppet-vscode.github.io/docs/features/linting/

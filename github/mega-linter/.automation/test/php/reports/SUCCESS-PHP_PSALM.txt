@@ -1,0 +1,28 @@
+Results of psalm linter (version 4.3.1)
+See documentation on https://nvuillam.github.io/mega-linter/descriptors/php_psalm/
+-----------------------------------------------
+
+[SUCCESS] .automation/test/php/php_good_1.php
+    Scanning files...
+    Analyzing files...
+    
+    ░
+    ------------------------------
+    No errors found!
+    ------------------------------
+    
+    Checks took 0.25 seconds and used 39.379MB of memory
+    Psalm was unable to infer types in the codebase
+
+[SUCCESS] .automation/test/php/php_good_2.php
+    Scanning files...
+    Analyzing files...
+    
+    ░
+    ------------------------------
+    No errors found!
+    ------------------------------
+    
+    Checks took 0.31 seconds and used 36.996MB of memory
+    Psalm was unable to infer types in the codebase
+
