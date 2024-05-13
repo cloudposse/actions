@@ -14,7 +14,7 @@ jobs:
     if: github.event.client_payload.github.payload.comment.id != ''
     steps:
       - name: "Add reaction"
-        uses: cloudposse/actions/github/create-or-update-comment@0.33.0
+        uses: peter-evans/create-or-update-comment@v4
         with:
           repository: ${{ github.event.client_payload.github.payload.repository.full_name }}
           comment-id: ${{ github.event.client_payload.github.payload.comment.id }}
