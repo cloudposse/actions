@@ -21,12 +21,44 @@ jobs:
           token: ${{ secrets.REPO_ACCESS_TOKEN }}
           reactions: '+1'
 
+  pending:
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Update GitHub Status for pending"
+        uses: docker://cloudposse/github-status-updater
+        with:
+          args: >-
+            -action update_state 
+            -ref "${{ github.event.client_payload.pull_request.head.sha }}"
+            -repo "${{ github.event.client_payload.github.payload.repository.name }}"
+            -state pending
+            -context "test/terratest"
+            -description "Tests started by @${{ github.event.client_payload.github.actor }}"
+            -url "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            -owner "${{ github.event.client_payload.github.payload.repository.owner.login }}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.REPO_ACCESS_TOKEN }}
+
   terratest:
     runs-on: ubuntu-latest
     container: cloudposse/test-harness:latest
+    needs: [pending]
     env:
       MAKE_INCLUDES: Makefile
+    continue-on-error: true
+    strategy:
+      max-parallel: 1
+      fail-fast: false # Don't fail fast to avoid locking TF State
+      matrix:
+        platform: [terraform, opentofu]
     steps:
+    - name: "Checkout code for ChatOps"
+      uses: actions/checkout@v3
+      with:
+        token: ${{ secrets.REPO_ACCESS_TOKEN }}
+        repository: ${{ github.event.client_payload.pull_request.head.repo.full_name }}
+        ref: ${{ github.event.client_payload.pull_request.head.ref }}
+
     - name: "Update GitHub Status for pending"
       uses: docker://cloudposse/github-status-updater
       with:
@@ -35,26 +67,20 @@ jobs:
           -ref "${{ github.event.client_payload.pull_request.head.sha }}"
           -repo "${{ github.event.client_payload.github.payload.repository.name }}"
           -state pending
-          -context "test/terratest"
+          -context "test/terratest/${{ matrix.platform }}"
           -description "Tests started by @${{ github.event.client_payload.github.actor }}"
           -url "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           -owner "${{ github.event.client_payload.github.payload.repository.owner.login }}"
       env:
         GITHUB_TOKEN: ${{ secrets.REPO_ACCESS_TOKEN }}
 
-    - name: "Checkout code for ChatOps"
-      uses: actions/checkout@v3
-      with:
-        token: ${{ secrets.REPO_ACCESS_TOKEN }}
-        repository: ${{ github.event.client_payload.pull_request.head.repo.full_name }}
-        ref: ${{ github.event.client_payload.pull_request.head.ref }}
-
     - name: "Determine required terraform version"
+      if: ${{ matrix.platform == 'terraform' }}
       shell: bash -x -e -o pipefail {0}
       run: |
         # Some legacy support is on 0.11 branches and we determine the Terraform version based on the target branch name
         VERSION=$(cut -d/ -f1 <<<${BASE_REF})
-        if [[ ${VERSION} != '0.11' && ${VERSION} != 'tofu' ]]; then
+        if [[ ${VERSION} != '0.11' ]]; then
           TF012=0.12.31
           TF013=$(terraform-0.13 version --json | jq -r .terraform_version)
           TF014=$(terraform-0.14 version --json | jq -r .terraform_version)
@@ -68,26 +94,20 @@ jobs:
 
         # Match lables like `terraform/0.12` or nothing (to prevent non-zero exit code)
         # Use [0-9] because \d is not standard part of egrep
-        OVERRIDE_TERRAFORM_VERSION=$(grep -Eo '(terraform/[0-9]+\.[x0-9]+|)' <<<${LABELS} | cut -d/ -f2)
-        OVERRIDE_TOFU_VERSION=$(grep -Eo '(opentofu|tofu)' <<<${LABELS})
+        OVERRIDE_VERSION=$(grep -Eo '(terraform/[0-9]+\.[x0-9]+|)' <<<${LABELS} | cut -d/ -f2)
 
-        if [ -n "${OVERRIDE_TERRAFORM_VERSION}" ]; then
-          VERSION=${OVERRIDE_TERRAFORM_VERSION}
+        if [ -n "${OVERRIDE_VERSION}" ]; then
+          VERSION=${OVERRIDE_VERSION}
           echo "Terraform ${VERSION} is required based on labels..."
-        elif [ -n "${OVERRIDE_TOFU_VERSION}" ]; then
-          VERSION='tofu'
-          echo "Terraform ${VERSION} is required based on labels..."        
         else
           echo "Terraform ${VERSION} is required for ${BASE_REF}..."
         fi
- 
+
         [[ $VERSION =~ ^1\. ]] && VERSION=1
 
         PATH_TO_TERRAFORM="/usr/local/terraform/${VERSION}/bin"
-        if [[ -x "${PATH_TO_TERRAFORM}/terraform" ]]; then
+        if [ -x "${PATH_TO_TERRAFORM}/terraform" ]; then
           echo "${PATH_TO_TERRAFORM}" >> "$GITHUB_PATH"
-        elif [[ $VERSION == 'tofu' ]]; then
-          echo "Use OpenToFu"
         else
           echo "Unable to locate executable for terraform ${VERSION}" >&2
           exit 1
@@ -183,7 +203,7 @@ jobs:
           -ref "${{ github.event.client_payload.pull_request.head.sha }}"
           -repo "${{ github.event.client_payload.github.payload.repository.name }}"
           -state failure
-          -context "test/terratest"
+          -context "test/terratest/${{ matrix.platform }}"
           -description "Tests failed"
           -url "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           -owner "${{ github.event.client_payload.github.payload.repository.owner.login }}"
@@ -198,7 +218,7 @@ jobs:
           -ref "${{ github.event.client_payload.pull_request.head.sha }}"
           -repo "${{ github.event.client_payload.github.payload.repository.name }}"
           -state success
-          -context "test/terratest"
+          -context "test/terratest/${{ matrix.platform }}"
           -description "Tests passed"
           -url "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           -owner "${{ github.event.client_payload.github.payload.repository.owner.login }}"
@@ -214,9 +234,45 @@ jobs:
           -ref "${{ github.event.client_payload.pull_request.head.sha }}"
           -repo "${{ github.event.client_payload.github.payload.repository.name }}"
           -state error
-          -context "test/terratest"
+          -context "test/terratest/${{ matrix.platform }}"
           -description "Tests cancelled"
           -url "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           -owner "${{ github.event.client_payload.github.payload.repository.owner.login }}"
       env:
         GITHUB_TOKEN: ${{ secrets.REPO_ACCESS_TOKEN }}
+
+  finalize:
+    runs-on: ubuntu-latest
+    needs: [terratest]
+    if: ${{ always() }}
+    steps:
+      - shell: bash
+        id: status
+        run: |
+          if [[ ${{ needs.terratest.result }} == 'success' ]]; then
+              echo "result=success" >> $GITHUB_OUTPUT
+          elif [[ ${{ needs.terratest.result }} == 'cancelled' ]]; then
+            echo "result=failure" >> $GITHUB_OUTPUT
+          elif [[ ${{ needs.terratest.result }} == 'failure' ]]; then
+            echo "result=failure" >> $GITHUB_OUTPUT
+          elif [[ ${{ needs.terratest.result }} == 'skipped' ]]; then
+            echo "result=failure" >> $GITHUB_OUTPUT
+          else
+              echo "Some tests failed"
+              exit 1
+          fi
+
+      - name: "Update GitHub Status for pending"
+        uses: docker://cloudposse/github-status-updater
+        with:
+          args: >-
+            -action update_state 
+            -ref "${{ github.event.client_payload.pull_request.head.sha }}"
+            -repo "${{ github.event.client_payload.github.payload.repository.name }}"
+            -state ${{ steps.status.outputs.result }}
+            -context "test/terratest"
+            -description "Tests started by @${{ github.event.client_payload.github.actor }}"
+            -url "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            -owner "${{ github.event.client_payload.github.payload.repository.owner.login }}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.REPO_ACCESS_TOKEN }}
