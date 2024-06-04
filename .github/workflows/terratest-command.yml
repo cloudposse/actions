@@ -105,11 +105,27 @@ jobs:
 
         [[ $VERSION =~ ^1\. ]] && VERSION=1
 
-        PATH_TO_TERRAFORM="/usr/local/terraform/${VERSION}/bin"
-        if [ -x "${PATH_TO_TERRAFORM}/terraform" ]; then
-          echo "${PATH_TO_TERRAFORM}" >> "$GITHUB_PATH"
+        PATH_TO_TERRAFORM=$(update-alternatives --list terraform | grep "/${VERSION}")
+        if [ -x "${PATH_TO_TERRAFORM}" ]; then
+          update-alternatives --set terraform ${PATH_TO_TERRAFORM}
         else
           echo "Unable to locate executable for terraform ${VERSION}" >&2
+          exit 1
+        fi
+      env:
+        # Pull request target branch
+        BASE_REF: ${{ github.event.client_payload.pull_request.base.ref }}
+        LABELS: ${{ join(github.event.client_payload.pull_request.labels.*.name, '\n') }}
+
+    - name: "Determine required opentofu version"
+      if: ${{ matrix.platform == 'opentofu' }}
+      shell: bash -x -e -o pipefail {0}
+      run: |
+        PATH_TO_TERRAFORM=$(update-alternatives --list terraform | grep "/tofu")
+        if [ -x "${PATH_TO_TERRAFORM}" ]; then
+          update-alternatives --set terraform ${PATH_TO_TERRAFORM}
+        else
+          echo "Unable to locate executable for opentofu" >&2
           exit 1
         fi
       env:
