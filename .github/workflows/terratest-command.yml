@@ -208,7 +208,9 @@ jobs:
         fi
 
     - name: "Test `examples/complete` with terratest"
-      run: make -C test/src
+      run: |-
+        terraform --version
+        make -C test/src
 
     - name: "Update GitHub Status for failure"
       if: ${{ failure() }}
