@@ -2,8 +2,6 @@ name: terratest
 on:
   repository_dispatch:
     types: [terratest-command]
-  workflow_dispatch:
-    inputs: {}
 
 defaults:
   run:
