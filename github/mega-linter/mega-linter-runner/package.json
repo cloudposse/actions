@@ -1,0 +1,91 @@
+{
+  "name": "mega-linter-runner",
+  "version": "4.24.1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nvuillam/mega-linter.git"
+  },
+  "description": "Local runner for Mega-Linter",
+  "main": "index.js",
+  "files": [
+    "lib",
+    "generators"
+  ],
+  "bin": {
+    "mega-linter-runner": "lib/index.js",
+    "mega-linter": "lib/index.js"
+  },
+  "scripts": {
+    "test": "mocha \"test/**/*.test.js\""
+  },
+  "keywords": [
+    "mega-linter",
+    "code",
+    "quality",
+    "runner",
+    "aggregator",
+    "javascript",
+    "typescript",
+    "python",
+    "c",
+    "java",
+    "csharp",
+    "yaml",
+    "json",
+    "rst",
+    "markdown",
+    "dotnet",
+    "lua",
+    "r",
+    "c++",
+    "dockerfile",
+    "bash",
+    "dart",
+    "go",
+    "groovy",
+    "react",
+    "perl",
+    "php",
+    "powershell",
+    "kotlin",
+    "scala",
+    "linter",
+    "lint",
+    "technical",
+    "debt",
+    "raku",
+    "ruby",
+    "rust",
+    "sql",
+    "basic",
+    "puppet",
+    "cloudformation",
+    "css",
+    "env",
+    "graphql",
+    "latex",
+    "protocol",
+    "buffer",
+    "kubernetes",
+    "gherkin",
+    "cucumber",
+    "terraform",
+    "snakemake",
+    "ansible"
+  ],
+  "author": "Nicolas Vuillamy",
+  "license": "MIT",
+  "dependencies": {
+    "chalk": "^4.1.0",
+    "find-package-json": "^1.2.0",
+    "optionator": "^0.9.1",
+    "yeoman-environment": "^2.10.3",
+    "yeoman-generator": "^4.12.0",
+    "yosay": "^2.0.2"
+  },
+  "devDependencies": {
+    "assert": "^2.0.0",
+    "eslint": "^7.14.0",
+    "mocha": "^8.2.1"
+  }
+}
