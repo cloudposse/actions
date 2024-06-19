@@ -1,4 +1,4 @@
-FROM codefresh/cli:0.74.9
+FROM codefresh/cli:0.87.4
 
 LABEL maintainer="Cloud Posse <hello@cloudposse.com>"
 
