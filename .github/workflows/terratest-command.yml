@@ -47,7 +47,7 @@ jobs:
       MAKE_INCLUDES: Makefile
     continue-on-error: true
     strategy:
-      max-parallel: 1
+      max-parallel: 10
       fail-fast: false # Don't fail fast to avoid locking TF State
       matrix:
         platform: [terraform, opentofu]
