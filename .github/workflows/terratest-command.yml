@@ -208,6 +208,8 @@ jobs:
         fi
 
     - name: "Test `examples/complete` with terratest"
+      env:
+        TOFU_OR_TF: ${{ matrix.platform }}
       run: |-
         terraform --version
         make -C test/src
